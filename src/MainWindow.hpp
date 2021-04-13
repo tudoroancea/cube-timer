@@ -6,9 +6,7 @@
 #define CUBE_TIMER_MAINWINDOW_HPP
 
 #include <QMainWindow>
-//#include <QLabel>
-//#include <QTimer>
-//#include <chrono>
+#include <array>
 
 QT_BEGIN_NAMESPACE
 	class QLabel;
@@ -26,11 +24,8 @@ public slots:
 
 public:
 	MainWindow();
-
 	void keyPressEvent(QKeyEvent* event) override;
-
-
+	void keyReleaseEvent(QKeyEvent* event) override;
 };
-
 
 #endif //CUBE_TIMER_MAINWINDOW_HPP
