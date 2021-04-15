@@ -16,7 +16,7 @@ private:
 	T milliseconds;
 public:
 	[[maybe_unused]] Duration(T h, T min, T s, T mil) : hours(h), minutes(min), seconds(s), milliseconds(mil) {}
-	explicit Duration(long mil) {
+	Duration(long mil) {
 		if (mil <= 0) {
 			hours = 0;
 			minutes = 0;
@@ -32,22 +32,54 @@ public:
 			milliseconds = mil;
 		}
 	}
-	[[nodiscard]] QString toString() const {
-		QString result;
+	[[nodiscard]] QString toQString() const {
+		return QString(toString().c_str());
+	}
+
+	[[nodiscard]] std::string toString() const {
+		std::string result;
+		bool h(false),mins(false),secs(false);
 		if (hours > 0) {
-			result += std::to_string(hours).data();
+			h = true;
+			result += std::to_string(hours);
 			result += ":";
 		}
 		if (minutes > 0) {
-			result += std::to_string(minutes).data();
+			mins = true;
+			if (h && minutes <= 9) {
+				result += "0";
+			}
+			result += std::to_string(minutes);
 			result += ":";
+		} else if (h) {
+			result += "00:";
 		}
 		if (seconds > 0) {
-			result += std::to_string(seconds).data();
+			secs = true;
+			if (mins && seconds <= 9) {
+				result += "0";
+			}
+			result += std::to_string(seconds);
 			result += ".";
+		} else if (mins) {
+			result += "00.";
 		}
 		if (milliseconds > 0) {
-			result += std::to_string(milliseconds).data();
+			if (result.empty()) {
+				result += "0.";
+			}
+			if (milliseconds <= 99) {
+				result += "0";
+			}
+			if (milliseconds <= 9) {
+				result += "0";
+			}
+			result += std::to_string(milliseconds);
+		} else {
+			if (!secs) {
+				result += "0.";
+			}
+			result += "000";
 		}
 		return result;
 	}

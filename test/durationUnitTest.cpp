@@ -25,6 +25,7 @@ TEST(DurationTest, StringConversion) {
 	std::uniform_int_distribution<long> distrib(0);
 	for (size_t i(0); i < 10000; ++i) {
 		Duration<long> duration(distrib(gen));
-		ASSERT_NO_THROW((void)duration.toString());
+		ASSERT_NO_THROW((void) duration.toQString());
+		ASSERT_NO_THROW((void) duration.toString());
 	}
 }
