@@ -29,6 +29,7 @@ MainWindow::MainWindow() : centralLabel(new QLabel), timer(new QTimer) {
 	this->move(QGuiApplication::screens()[1]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
 	this->setCentralWidget(centralLabel);
+	this->statusBar()->showMessage("Press Space bar to start timer");
 
 	this->show();
 	this->setFocus();
@@ -40,11 +41,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 		case Qt::Key_Space: {
 			if (!event->isAutoRepeat()) {
 				if (timer->timerId() == -1) {
-					timer->start();
-					startPoint = std::chrono::high_resolution_clock::now();
-//					centralLabel->setText("00000");
+					statusBar()->showMessage("Starting");
 				} else {
 					timer->stop();
+					stoppedChronoJustBefore = true;
 				}
 			}
 		    break;
@@ -58,12 +58,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 	QWidget::keyReleaseEvent(event);
 	switch(event->key()) {
 		case Qt::Key_Space: {
-//			centralLabel->setText("0");
 			if (!event->isAutoRepeat()) {
-				if (timer->timerId() == -1) {
-//					timer->start();
-//					startPoint = std::chrono::high_resolution_clock::now();
+				if (timer->timerId() == -1 && !stoppedChronoJustBefore) {
+					statusBar()->clearMessage();
+					timer->start();
+					startPoint = std::chrono::high_resolution_clock::now();
 				}
+				stoppedChronoJustBefore = false;
 			}
 			break;
 		}

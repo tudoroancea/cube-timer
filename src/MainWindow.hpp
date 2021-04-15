@@ -18,7 +18,8 @@ private:
 	QLabel* centralLabel;
 	QTimer* timer;
 	std::chrono::time_point<std::chrono::high_resolution_clock> startPoint;
-
+//	Status info ============
+	bool stoppedChronoJustBefore;
 public slots:
 	void changeDisplayedTime();
 
