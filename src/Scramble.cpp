@@ -3,7 +3,9 @@
 //
 
 #include "Scramble.hpp"
+
 #include <random>
+#include <QString>
 
 std::string toString(const Moves& move) {
 	switch (move) {
@@ -28,13 +30,50 @@ std::string toString(const Moves& move) {
 		default: return "";
 	}
 }
+bool repeated(Moves const& lhs, Moves const& rhs) {
+	switch (lhs) {
+		case R:
+		case Rp:
+		case R2: {
+			return (rhs == R || rhs == Rp || rhs == R2);
+		}
+		case U:
+		case Up:
+		case U2: {
+			return (rhs == U || rhs == Up || rhs == U2);
+		}
+		case F:
+		case Fp:
+		case F2: {
+			return (rhs == F || rhs == Fp || rhs == F2);
+		}
+		case L:
+		case Lp:
+		case L2: {
+			return (rhs == L || rhs == Lp || rhs == L2);
+		}
+		case D:
+		case Dp:
+		case D2: {
+			return (rhs == D || rhs == Dp || rhs == D2);
+		}
+		case B:
+		case Bp:
+		case B2: {
+			return (rhs == B || rhs == Bp || rhs == B2);
+		}
+	}
+}
 
 Scramble::Scramble() {
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	std::uniform_int_distribution<long> distrib(0,19);
-	for (size_t i(0); i < 20; ++i) {
-		moves[i] = Moves(distrib(gen));
+	moves[0] = Moves(distrib(gen));
+	for (size_t i(1); i < 20; ++i) {
+		do {
+			moves[i] = Moves(distrib(gen));
+		} while (repeated(moves[i], moves[i-1]));
 	}
 }
 
@@ -51,3 +90,6 @@ std::string Scramble::toString() const {
 	return result;
 }
 
+QString Scramble::toQString() const {
+	return QString(toString().c_str());
+}

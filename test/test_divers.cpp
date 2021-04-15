@@ -4,6 +4,7 @@
 
 #include "MainWindow.hpp"
 #include "Duration.hpp"
+#include "Scramble.hpp"
 
 #include <iostream>
 #include <iomanip>

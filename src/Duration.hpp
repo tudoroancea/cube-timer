@@ -33,7 +33,7 @@ public:
 		}
 	}
 	[[nodiscard]] QString toQString() const {
-		return QString(toString().data());
+		return QString(toString().c_str());
 	}
 
 	[[nodiscard]] std::string toString() const {
@@ -62,20 +62,23 @@ public:
 			result += std::to_string(seconds);
 			result += ".";
 		} else if (mins) {
-			result += "00:";
+			result += "00.";
 		}
 		if (milliseconds > 0) {
 			if (result.empty()) {
 				result += "0.";
 			}
-			if (secs && milliseconds <= 99) {
+			if (milliseconds <= 99) {
 				result += "0";
 			}
-			if (secs && milliseconds <= 9) {
+			if (milliseconds <= 9) {
 				result += "0";
 			}
 			result += std::to_string(milliseconds);
-		} else if (secs) {
+		} else {
+			if (!secs) {
+				result += "0.";
+			}
 			result += "000";
 		}
 		return result;
