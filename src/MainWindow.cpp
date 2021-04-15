@@ -74,5 +74,5 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 void MainWindow::changeDisplayedTime() {
 	std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
 	std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
-	centralLabel->setText(Duration<long long int>(currentTime.count()).toString());
+	centralLabel->setText(Duration<long long int>(currentTime.count()).toQString());
 }
