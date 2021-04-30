@@ -13,18 +13,21 @@
 #include <QLabel>
 #include <iostream>
 
-
-MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLabel(Scramble().toQString(), this)), timer(new QTimer) {
+MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLabel(Scramble().toQString(), this)), timer(new QTimer), launchingTimer(new QTimer) {
 
 	this->setWindowTitle("Cube Timer");
 	this->resize(500,500);
-	this->move(QGuiApplication::screens()[1]->geometry().center() - frameGeometry().center());
+	QList screens(QGuiApplication::screens());
+	this->move(screens[(screens.size() > 1 ? 1 : 0)]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
 	this->statusBar()->showMessage("Press Space bar to start timer");
 
 	timer->setTimerType(Qt::PreciseTimer);
 	connect(timer, &QTimer::timeout, this, &MainWindow::changeDisplayedTime);
-
+	launchingTimer->setTimerType(Qt::PreciseTimer);
+	launchingTimer->setSingleShot(true);
+	launchingTimer->setInterval(1000);
+	connect(launchingTimer, &QTimer::timeout, this, &MainWindow::makeTimeGreen);
 	timeLabel->setAlignment(Qt::AlignCenter);
 	QFont font(timeLabel->font());
 	font.setFamily("Fira Code iScript");
@@ -59,7 +62,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 			    break;
 			case Qt::Key_Space: {
 				if (!event->isAutoRepeat()) {
-					statusBar()->showMessage("Starting");
+					this->makeTimeRed();
+					launchingTimer->start();
 				}
 			    break;
 			}
@@ -75,9 +79,14 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 		case Qt::Key_Space: {
 			if (!event->isAutoRepeat()) {
 				if (!timer->isActive() && !stoppedChronoJustBefore) {
-					statusBar()->clearMessage();
-					timer->start();
-					startPoint = std::chrono::high_resolution_clock::now();
+					if (launchingTimer->isActive()) {
+						this->statusBar()->showMessage("One must wait 1s before starting a timer.");
+						launchingTimer->stop();
+					} else {
+						timer->start();
+						startPoint = std::chrono::high_resolution_clock::now();
+					}
+					this->resetTimeColor();
 				}
 				stoppedChronoJustBefore = false;
 			}
@@ -91,4 +100,14 @@ void MainWindow::changeDisplayedTime() {
 	std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
 	std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
 	timeLabel->setText(Duration<long long int>(currentTime.count()).toQString());
+}
+
+void MainWindow::makeTimeRed() const {
+	timeLabel->setStyleSheet("QLabel { color : rgb(240,94,135); }");
+}
+void MainWindow::makeTimeGreen() const {
+	timeLabel->setStyleSheet("QLabel { color : rgb(123,216,143); }");
+}
+void MainWindow::resetTimeColor() const {
+	timeLabel->setStyleSheet("");
 }

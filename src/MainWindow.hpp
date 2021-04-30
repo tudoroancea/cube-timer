@@ -14,13 +14,20 @@ QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
+Q_OBJECT
 private:
 	QLabel* timeLabel;
 	QLabel* scrambleLabel;
 	QTimer* timer;
+	QTimer* launchingTimer;
 	std::chrono::time_point<std::chrono::high_resolution_clock> startPoint;
 	//	Status info ============
 	bool stoppedChronoJustBefore;
+
+private slots:
+	void makeTimeRed() const;
+	void makeTimeGreen() const;
+	void resetTimeColor() const;
 public slots:
 	void changeDisplayedTime();
 
