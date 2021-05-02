@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QLabel>
 #include <iostream>
+#include <filesystem>
 
 MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLabel(Scramble().toQString(), this)), timer(new QTimer), launchingTimer(new QTimer) {
 
@@ -26,15 +27,13 @@ MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLa
 	connect(timer, &QTimer::timeout, this, &MainWindow::changeDisplayedTime);
 	launchingTimer->setTimerType(Qt::PreciseTimer);
 	launchingTimer->setSingleShot(true);
-	launchingTimer->setInterval(1000);
 	connect(launchingTimer, &QTimer::timeout, this, &MainWindow::makeTimeGreen);
+
 	timeLabel->setAlignment(Qt::AlignCenter);
 	QFont font(timeLabel->font());
 	font.setFamily("Fira Code iScript");
 	font.setPointSize(45);
 	timeLabel->setFont(font);
-
-	scrambleLabel->move(this->geometry().center());
 	this->setCentralWidget(timeLabel);
 
 	scrambleLabel->setAlignment(Qt::AlignCenter);
@@ -44,9 +43,15 @@ MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLa
 	font.setPointSize(15);
 	scrambleLabel->setFont(font);
 
-
 	this->show();
 	this->setFocus();
+}
+
+MainWindow::~MainWindow() {
+	delete timeLabel;
+	delete scrambleLabel;
+	delete timer;
+	delete launchingTimer;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
@@ -57,13 +62,18 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 		scrambleLabel->setText(Scramble().toQString());
 	} else {
 		switch (event->key()) {
+			//case Qt::Key_T: {
+			//    	auto filename = QFileDialog::getOpenFileName(this, "Open File", "~/CLionProjects/game_of_life/data");
+			//	    this->statusBar()->showMessage(filename);
+			//    break;
+			//}
 			case Qt::Key_N:
 		        scrambleLabel->setText(Scramble().toQString());
 			    break;
 			case Qt::Key_Space: {
 				if (!event->isAutoRepeat()) {
 					this->makeTimeRed();
-					launchingTimer->start();
+					launchingTimer->start(launchingInterval);
 				}
 			    break;
 			}
@@ -80,7 +90,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 			if (!event->isAutoRepeat()) {
 				if (!timer->isActive() && !stoppedChronoJustBefore) {
 					if (launchingTimer->isActive()) {
-						this->statusBar()->showMessage("One must wait 1s before starting a timer.");
+						this->statusBar()->showMessage("One must wait 1s before starting a timer.", 1000);
 						launchingTimer->stop();
 					} else {
 						timer->start();

@@ -7,9 +7,12 @@
 #include "Scramble.hpp"
 
 #include <iostream>
+#include <QTimer>
 #include <iomanip>
 #include <chrono>
 #include <vector>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 int main() {
 	std::vector<Duration<int>> tab{999,1000,601000,572091,0,12,98,122,60122};

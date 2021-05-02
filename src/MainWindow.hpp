@@ -11,6 +11,7 @@
 QT_BEGIN_NAMESPACE
 	class QLabel;
 	class QTimer;
+	class QGridLayout;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
@@ -22,7 +23,10 @@ private:
 	QTimer* launchingTimer;
 	std::chrono::time_point<std::chrono::high_resolution_clock> startPoint;
 	//	Status info ============
-	bool stoppedChronoJustBefore;
+	bool stoppedChronoJustBefore = false;
+
+	//	Settings ========================
+	int launchingInterval = 300;
 
 private slots:
 	void makeTimeRed() const;
@@ -33,6 +37,7 @@ public slots:
 
 public:
 	MainWindow();
+	~MainWindow();
 	void keyPressEvent(QKeyEvent* event) override;
 	void keyReleaseEvent(QKeyEvent* event) override;
 };

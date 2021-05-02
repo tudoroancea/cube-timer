@@ -23,3 +23,7 @@ target_link_libraries(test_divers ${REQUIRED_LIBS_QUALIFIED} timer)
 add_executable(durationUnitTest durationUnitTest.cpp)
 target_link_libraries(durationUnitTest PUBLIC gtest gtest_main timer)
 gtest_discover_tests(durationUnitTest)
+
+add_executable(scrambleUnitTest scrambleUnitTest.cpp)
+target_link_libraries(scrambleUnitTest PUBLIC gtest gtest_main timer)
+gtest_discover_tests(scrambleUnitTest)
