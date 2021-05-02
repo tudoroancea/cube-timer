@@ -14,7 +14,7 @@ enum Moves{R,Rp,U,Up,F,Fp,L,Lp,D,Dp,B,Bp,R2,U2,F2,L2,D2,B2};
 std::string toString(Moves const&);
 
 struct Scramble{
-	std::array<Moves,20> moves;
+	std::array<Moves,20> moves{};
 	Scramble();
 	Moves& operator[](size_t const&);
 	[[nodiscard]] std::string toString() const;

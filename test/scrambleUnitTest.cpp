@@ -16,8 +16,15 @@ size_t number(std::string const& str) {
 
 TEST(ScrambleTest, Size) {
 	for (size_t k(0); k < 10000; ++k) {
-		ASSERT_NO_THROW(Scramble s;);
+		ASSERT_NO_THROW(Scramble s);
 		Scramble s;
-		ASSERT_EQ(number(s.toString()), 20);
+		size_t n(number(s.toString()));
+		ASSERT_EQ(n, 20) << n << " au lieu de 20 (itération " << k << ")";
+	}
+}
+
+TEST(ScrambleTest, MovesConstruction) {
+	for (int k(0); k < 100; ++k) {
+		ASSERT_NO_THROW(Moves m((Moves(k)))) << "k";
 	}
 }
