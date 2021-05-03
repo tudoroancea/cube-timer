@@ -4,7 +4,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(timer STATIC
 			MainWindow.cpp MainWindow.hpp
 			Duration.cpp Duration.hpp
-			Scramble.cpp Scramble.hpp MainWindow2.cpp MainWindow2.hpp)
+			Scramble.cpp Scramble.hpp
+			MainWindow2.cpp MainWindow2.hpp
+			TimesList.cpp TimesList.hpp
+			rapidcsv.h
+			)
 target_link_libraries(timer ${REQUIRED_LIBS_QUALIFIED})
 # Main Target ================================================================================
 if (APPLE)

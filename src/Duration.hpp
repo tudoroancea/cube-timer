@@ -16,7 +16,7 @@ private:
 	T milliseconds;
 public:
 	[[maybe_unused]] Duration(T h, T min, T s, T mil) : hours(h), minutes(min), seconds(s), milliseconds(mil) {}
-	Duration(long mil) {
+	Duration(T mil) {
 		if (mil <= 0) {
 			hours = 0;
 			minutes = 0;
@@ -84,7 +84,20 @@ public:
 		return result;
 	}
 
-//	Getters ==============
+	[[nodiscard]] double toDouble() const {
+		return milliseconds*0.001+seconds+60.0*minutes+60.0*seconds;
+	}
+
+	[[nodiscard]] T toT() const {
+		return milliseconds+1000*seconds+60000*minutes+3600000*hours;
+	}
+
+	operator T() const  {
+		return milliseconds+1000*seconds+60000*minutes+3600000*hours;
+	}
+
+	//	Getters ==============
+
 	T getHours() const {return hours;}
 	T getMinutes() const {return minutes;}
 	T getSeconds() const {return seconds;}

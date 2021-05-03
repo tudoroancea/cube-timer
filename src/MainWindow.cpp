@@ -5,43 +5,47 @@
 #include "MainWindow.hpp"
 #include "Duration.hpp"
 #include "Scramble.hpp"
+#include "TimesList.hpp"
+#include "rapidcsv.h"
 
 #include <QApplication>
 #include <QtWidgets>
 #include <QEvent>
 #include <QTimer>
 #include <QLabel>
+#include <QBoxLayout>
 #include <iostream>
 #include <filesystem>
 
-MainWindow::MainWindow() : timeLabel(new QLabel("0.000")), scrambleLabel(new QLabel(Scramble().toQString(), this)), timer(new QTimer), launchingTimer(new QTimer) {
+MainWindow::MainWindow(char* const& argv0)
+	: timer(new QTimer),
+	  launchingTimer(new QTimer),
+	  timeLabel(new QLabel("0.000")),
+	  scrambleLabel(new QLabel(Scramble().toQString(), this)),
+	  mainLayout(new QHBoxLayout),
+	  timesList(new TimesList(argv0, this)),
+	  exePath(argv0)
+{
 
 	this->setWindowTitle("Cube Timer");
-	this->resize(500,500);
+	this->setMinimumSize(700,500);
 	QList screens(QGuiApplication::screens());
 	this->move(screens[(screens.size() > 1 ? 1 : 0)]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
 	this->statusBar()->showMessage("Press Space bar to start timer");
 
-	timer->setTimerType(Qt::PreciseTimer);
-	connect(timer, &QTimer::timeout, this, &MainWindow::changeDisplayedTime);
-	launchingTimer->setTimerType(Qt::PreciseTimer);
-	launchingTimer->setSingleShot(true);
-	connect(launchingTimer, &QTimer::timeout, this, &MainWindow::makeTimeGreen);
+	createTimers();
+	createLabels();
 
-	timeLabel->setAlignment(Qt::AlignCenter);
-	QFont font(timeLabel->font());
-	font.setFamily("Fira Code iScript");
-	font.setPointSize(45);
-	timeLabel->setFont(font);
-	this->setCentralWidget(timeLabel);
+	auto* rhs(new QVBoxLayout);
+	rhs->addWidget(scrambleLabel, 2, Qt::AlignCenter);
+	rhs->addWidget(timeLabel, 8, Qt::AlignCenter);
 
-	scrambleLabel->setAlignment(Qt::AlignCenter);
-	scrambleLabel->resize(500,100);
-	scrambleLabel->move(0,0);
-	font = scrambleLabel->font();
-	font.setPointSize(15);
-	scrambleLabel->setFont(font);
+	mainLayout->addWidget(timesList, 0);
+	mainLayout->addLayout(rhs, 1);
+
+	this->setCentralWidget(new QWidget);
+	this->centralWidget()->setLayout(mainLayout);
 
 	this->show();
 	this->setFocus();
@@ -57,9 +61,13 @@ MainWindow::~MainWindow() {
 void MainWindow::keyPressEvent(QKeyEvent* event) {
 	QWidget::keyPressEvent(event);
 	if (timer->isActive()) {
+		std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
 		timer->stop();
 		stoppedChronoJustBefore = true;
 		scrambleLabel->setText(Scramble().toQString());
+		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
+		Duration<long long int> duration(currentTime.count());
+		timesList->addTime(duration);
 	} else {
 		switch (event->key()) {
 			//case Qt::Key_T: {
@@ -120,4 +128,29 @@ void MainWindow::makeTimeGreen() const {
 }
 void MainWindow::resetTimeColor() const {
 	timeLabel->setStyleSheet("");
+}
+
+void MainWindow::createTimers() {
+	timer->setTimerType(Qt::PreciseTimer);
+	connect(timer, &QTimer::timeout, this, &MainWindow::changeDisplayedTime);
+
+	launchingTimer->setTimerType(Qt::PreciseTimer);
+	launchingTimer->setSingleShot(true);
+	connect(launchingTimer, &QTimer::timeout, this, &MainWindow::makeTimeGreen);
+}
+
+void MainWindow::createLabels() {
+	timeLabel->setAlignment(Qt::AlignCenter);
+	QFont font(timeLabel->font());
+	font.setFamily("Fira Code iScript");
+	font.setPointSize(45);
+	timeLabel->setFont(font);
+	this->setCentralWidget(timeLabel);
+
+	scrambleLabel->setAlignment(Qt::AlignCenter);
+	//scrambleLabel->resize(500,100);
+	scrambleLabel->move(0,0);
+	font = scrambleLabel->font();
+	font.setPointSize(15);
+	scrambleLabel->setFont(font);
 }
