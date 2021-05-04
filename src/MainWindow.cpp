@@ -13,6 +13,8 @@
 #include <QTimer>
 #include <QLabel>
 #include <QBoxLayout>
+#include <QAction>
+#include <QFileDialog>
 #include <iostream>
 #include <filesystem>
 
@@ -31,10 +33,16 @@ MainWindow::MainWindow(char* const& argv0)
 	QList screens(QGuiApplication::screens());
 	this->move(screens[(screens.size() > 1 ? 1 : 0)]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
-	this->statusBar()->showMessage("Press Space bar to start timer");
+	#ifdef RELEASE_MODE
+		this->statusBar()->addWidget(new QLabel(QString("Version ").append(PROJECT_VERSION)));
+	#else
+		this->statusBar()->showMessage("Press Space bar to start timer");
+	#endif
 
 	createTimers();
 	createLabels();
+	createActions();
+	createMenus();
 
 	auto* rhs(new QVBoxLayout);
 	rhs->addWidget(scrambleLabel, 2, Qt::AlignCenter);
@@ -147,4 +155,81 @@ void MainWindow::createLabels() {
 	font = scrambleLabel->font();
 	font.setPointSize(15);
 	scrambleLabel->setFont(font);
+}
+
+void MainWindow::createActions() {
+	actions["save"] = new QAction("Save", this);
+	actions["save"]->setShortcut(QKeySequence::Save);
+	connect(actions["save"], SIGNAL(triggered()), timesList, SLOT(saveToCurrentCSV()));
+
+	actions["saveAs"] = new QAction("Save As", this);
+	actions["saveAs"]->setShortcut(QKeySequence::SaveAs);
+	connect(actions["saveAs"], SIGNAL(triggered()), this, SLOT(saveAs()));
+
+	actions["loadDefaultCSV"] = new QAction("Load default CSV", this);
+	actions["loadDefaultCSV"]->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_D));
+	connect(actions["loadDefaultCSV"], SIGNAL(triggered()), this, SLOT(loadDefaultCSV()));
+
+	actions["loadCustomCSV"] = new QAction("Load custom CSV", this);
+	actions["loadCustomCSV"]->setShortcut(QKeySequence::Open);
+	connect(actions["loadCustomCSV"], SIGNAL(triggered()), this, SLOT(loadCustomCSV()));
+}
+void MainWindow::createMenus() {
+	fileMenu = menuBar()->addMenu("File");
+	fileMenu->addAction(actions["save"]);
+	fileMenu->addAction(actions["saveAs"]);
+	fileMenu->addAction(actions["loadDefaultCSV"]);
+	fileMenu->addAction(actions["loadCustomCSV"]);
+}
+
+void MainWindow::saveAs() {
+	QString str(QFileDialog::getSaveFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
+	if (!str.isEmpty()) {
+		timesList->saveToCustomCSV(str.toStdString());
+	}
+}
+
+void MainWindow::loadDefaultCSV() {
+	if (!timesList->isCurrentCSVDefault()) {
+		QMessageBox::StandardButton reply;
+		reply = QMessageBox::information(this, QString(), "Do you want to save current data ?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+		switch (reply) {
+			case QMessageBox::Ok: {
+				timesList->saveToCurrentCSV();
+				timesList->loadDefaultCSV();
+				break;
+			}
+			case QMessageBox::No:
+				timesList->loadDefaultCSV();
+			    break;
+			default:
+				break;
+		}
+	} else {
+		this->statusBar()->showMessage("The default CSV is already open", 1000);
+	}
+}
+
+void MainWindow::loadCustomCSV() {
+	QMessageBox::StandardButton reply(QMessageBox::question(this, QString(), "Do you want to save current data?",  QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::No));
+	bool letsDoIt(false);
+	switch (reply) {
+		case QMessageBox::Yes: {
+			timesList->saveToCurrentCSV();
+			letsDoIt = true;
+			break;
+		}
+		case QMessageBox::No: {
+			letsDoIt = true;
+			break;
+		}
+		default:
+			break;
+	}
+	if (letsDoIt) {
+		QString path(QFileDialog::getOpenFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
+		if (!path.isEmpty()) {
+			timesList->loadDefaultCSV();
+		}
+	}
 }

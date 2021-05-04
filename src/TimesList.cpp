@@ -20,8 +20,6 @@ void TimesList::readCurrentCSV() {
 	this->setRowCount(N);
 	long long readValue(0);
 	for (int i(0); i < resource.GetRowCount(); ++i) {
-		//auto newVertLabel(new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
-		//this->setVerticalHeaderItem(i,newVertLabel);
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
 		for (int j(0); j < resource.GetColumnCount(); ++j) {
 			readValue = resource.GetCell<long long>(j, i);
@@ -140,6 +138,10 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 	}
 }
 
+bool TimesList::isCurrentCSVDefault() const {
+	return currentCSVIsDefault;
+}
+
 void TimesList::loadDefaultCSV() {
 	currentCSVIsDefault = true;
 	try {
@@ -154,12 +156,10 @@ void TimesList::loadDefaultCSV() {
 	this->readCurrentCSV();
 }
 
-void TimesList::loadOtherCSV(const std::string& pathToCSV) {
+void TimesList::loadCustomCSV(const std::string& pathToCSV) {
 	currentCSVIsDefault = false;
-	fs::path newPath;
-	//  open the file with a QFileDialog
 	try {
-		resource.Load(newPath.string(),
+		resource.Load(pathToCSV,
 		              csv::LabelParams(0,-1),
 		              csv::SeparatorParams(),
 		              csv::ConverterParams(true, 0.0, 0));
@@ -168,26 +168,25 @@ void TimesList::loadOtherCSV(const std::string& pathToCSV) {
 		std::cerr << "Document not opened" << std::endl;
 	}
 	this->readCurrentCSV();
-	this->readCurrentCSV();
 }
 
-void TimesList::loadOtherCSV(const std::filesystem::path& pathToCSV) {
-	this->loadOtherCSV(fs::canonical(pathToCSV).string());
+void TimesList::loadCustomCSV(const std::filesystem::path& pathToCSV) {
+	this->loadCustomCSV(fs::canonical(pathToCSV).string());
 }
 
-void TimesList::saveCurrentCSV() {
+void TimesList::saveToCurrentCSV() {
 	resource.Save();
 }
 
-void TimesList::overrideDefaultCSVByCurrent() {
+void TimesList::saveToDefaultCSV() {
 	resource.Save(defaultPath.string());
 }
 
-void TimesList::saveCurrentCSVTo(const std::string& pathToCSV) {
+void TimesList::saveToCustomCSV(const std::string& pathToCSV) {
 	resource.Save(pathToCSV);
 }
 
-void TimesList::saveCurrentCSVTo(const std::filesystem::path& pathToCSV) {
+void TimesList::saveToCustomCSV(const std::filesystem::path& pathToCSV) {
 	resource.Save(fs::canonical(pathToCSV).string());
 }
 

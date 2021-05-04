@@ -2,7 +2,7 @@ Central widget : timer we can start/stop with space button
 
 - Time the resolutions
 - Save the times :\
-    [x] save times and time stamps (date and hour )
+    [x] saveToCurrentCSV times and time stamps (date and hour )
     [ ] mark them dnf/+2
     - add commentary\
     => CSV file with numeric/string attributes

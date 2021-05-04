@@ -1,7 +1,7 @@
 # Cube timer
 This is a simple GUI project using Qt to create a cube timer suited to my needs.
 This implies :
-- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target). It uses in particular the ```.app``` bundle particularities such as the ```Resource``` directory which can contain the CSV file used to save the times.
+- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target). It uses in particular the ```.app``` bundle particularities such as the ```Resource``` directory which can contain the CSV file used to saveToCurrentCSV the times.
 - The available features won't ever be very ground-breaking, and I won't develop the ones I don't find useful (even though they may be very popular in the community). *Eg* : I won't implement inspection times or scrambles for cubes larger that 3x3. I won't develop neither stackmat or other physical timers integration, nor smart cubes integration.
 
 ## Current features :
