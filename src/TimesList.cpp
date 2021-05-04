@@ -37,8 +37,8 @@ void TimesList::readCurrentCSV() {
 	this->resizeRowsToContents();
 }
 
-TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 3, parent) {
-	this->setHorizontalHeaderLabels(QStringList({"time", "ao5", "ao12"}));
+TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, parent) {
+	this->setHorizontalHeaderLabels(QStringList({"time", "mo3", "ao5", "ao12"}));
 	this->setWordWrap(false);
 	this->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	this->setFocusPolicy(Qt::NoFocus);
@@ -63,32 +63,67 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		auto newItem(new QTableWidgetItem(toAdd.toQString()));
 		this->setItem(oldRowCountTable,0,newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
-		// On calcule les ao5 et ao12
-		if (oldRowCountCSV >= 4) {
-			long long ao5(0);
-			for (size_t i(oldRowCountCSV-4); i <= oldRowCountCSV; ++i) {
-				ao5 += resource.GetCell<long long>("time", i);
+		// On calcule les mo3, ao5 et ao12
+		if (oldRowCountTable >= 2) {
+			long long mo3(0);
+			for (size_t i(oldRowCountCSV-2); i <= oldRowCountCSV; ++i) {
+				mo3 += resource.GetCell<long long>("time", i);
 			}
-			ao5 /= 5;
-			resource.SetCell<long long>(1,oldRowCountCSV, ao5);
-			newItem = new QTableWidgetItem(Duration<long long>(ao5).toQString());
+			mo3 /= 3;
+			resource.SetCell<long long>(1, oldRowCountCSV, mo3);
+			newItem = new QTableWidgetItem(Duration<long long>(mo3).toQString());
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
 		this->setItem(oldRowCountTable, 1, newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
-		if (oldRowCountCSV >= 11) {
-			long long ao12(0);
-			for (size_t i(oldRowCountCSV-11); i <= oldRowCountCSV; ++i) {
-				ao12 += resource.GetCell<long long>("time", i);
+
+		if (oldRowCountCSV >= 4) {
+			long long ao5(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t i(oldRowCountCSV-4); i <= oldRowCountCSV; ++i) {
+				readValue = resource.GetCell<long long>("time", i);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao5 += readValue;
 			}
-			ao12 /= 12;
-			resource.SetCell<long long>(2, oldRowCountCSV, ao12);
-			newItem = new QTableWidgetItem(Duration<long long>(ao12).toQString());
+			ao5 -= min;
+			ao5 -= max;
+			ao5 /= 3;
+			resource.SetCell<long long>(2,oldRowCountCSV, ao5);
+			newItem = new QTableWidgetItem(Duration<long long>(ao5).toQString());
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
 		this->setItem(oldRowCountTable, 2, newItem);
+		newItem->setFlags(Qt::ItemIsEnabled);
+
+		if (oldRowCountCSV >= 11) {
+			long long ao12(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t i(oldRowCountCSV-11); i <= oldRowCountCSV; ++i) {
+				readValue = resource.GetCell<long long>("time", i);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao12 += readValue;
+			}
+			ao12 -= min;
+			ao12 -= max;
+			ao12 /= 10;
+			resource.SetCell<long long>(3, oldRowCountCSV, ao12);
+			newItem = new QTableWidgetItem(Duration<long long>(ao12).toQString());
+		} else {
+			newItem = new QTableWidgetItem(QString());
+		}
+		this->setItem(oldRowCountTable, 3, newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
 	} else {
 		std::cerr << "CSV file and table don't have the same number of rows" << std::endl;
@@ -114,7 +149,7 @@ void TimesList::loadDefaultCSV() {
 void TimesList::loadOtherCSV(const std::string& pathToCSV) {
 	currentCSVIsDefault = false;
 	fs::path newPath;
-	//  open the file witth a QFileDialog
+	//  open the file with a QFileDialog
 	try {
 		resource.Load(newPath.string(),
 		              csv::LabelParams(0,-1),
