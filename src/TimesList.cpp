@@ -1,6 +1,8 @@
 //
 // Created by Tudor Oancea on 02/05/2021.
 //
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
 
 #include "TimesList.hpp"
 #include "rapidcsv.h"
@@ -94,67 +96,6 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 	} else {
 		std::cerr << "CSV file and table don't have the same number of rows" << std::endl;
 	}
-
-	//
-	//size_t oldRowCount(this->rowCount());
-	////try {
-	////	resource.SetCell(0, oldRowCount, (long long)toAdd);
-	////	std::cout << resource.GetCell<long long>(0,oldRowCount) << std::endl;
-	////} catch (rapidcsv::no_converter const&) {
-	////	std::cerr << "PAS BIEN" << std::endl;
-	////} catch (...) {
-	////	std::cerr << "pas bien" << std::endl;
-	////}
-	//this->insertRow(this->rowCount());
-	//auto newItem(new QTableWidgetItem(  toAdd.toQString()));
-	//newItem->setFlags(Qt::ItemIsEnabled);
-	////std::cout << std::boolalpha << (this->item(oldRowCount, 0)==nullptr) << std::endl;
-	////try {
-	//this->setItem(this->rowCount()-1, 0, newItem);
-	////}
-	////catch (rapidcsv::no_converter const&) {
-	////	std::cerr << "HEYO" << std::endl;
-	////}
-	//
-	//this->resizeColumnsToContents();
-	//this->resizeRowsToContents();
-	//
-	//if (oldRowCount >= 4) {
-	//	long long int ao5(0);
-	//	for (size_t i(oldRowCount-4); i <= oldRowCount; i++) {
-	//		//ao5 += resource.GetCell<long long int>(0,i);
-	//		std::string str(this->item(i,1)->text().toStdString());
-	//		if (!str.empty()) ao5 += std::stoll(str);
-	//	}
-	//	ao5 /= 5; // moyenne en milliseconds
-	//	//resource.SetCell(1, oldRowCount, ao5);
-	//	//this->item(this->rowCount(),0)->setText(Duration<long long int>(ao5).toQString());
-	//	newItem = new QTableWidgetItem(Duration<long long int>(ao5).toQString());
-	//	newItem->setFlags(Qt::ItemIsEnabled);
-	//	this->setItem(oldRowCount, 1, newItem);
-	//} else {
-	//	//resource.SetCell(1, oldRowCount, "");
-	//	//this->item(this->rowCount(),1)->setText("");
-	//	this->setItem(oldRowCount, 1, new QTableWidgetItem(QString()));
-	//}
-	//if (oldRowCount >= 11) {
-	//	long long int ao12(0);
-	//	for (size_t i(oldRowCount-11); i <= oldRowCount; i++) {
-	//		//ao12 += resource.GetCell<long long int>(0,i);
-	//		std::string str(this->item(i,2)->text().toStdString());
-	//		if (!str.empty()) ao12 += std::stoll(str);
-	//	}
-	//	ao12 /= 12;
-	//	//resource.SetCell(2, oldRowCount, ao12);
-	//	newItem = new QTableWidgetItem(Duration<long long int>(ao12).toQString());
-	//	newItem->setFlags(Qt::ItemIsEnabled);
-	//	//this->item(this->rowCount(),0)->setText(Duration<long long int>(ao12).toQString());
-	//	this->setItem(oldRowCount, 2, newItem);
-	//} else {
-	//	//resource.SetCell(2, oldRowCount, "");
-	//	//this->item(this->rowCount(),2)->setText("");
-	//	this->setItem(oldRowCount, 2, new QTableWidgetItem(QString()));
-	//}
-	//this->resizeColumnsToContents();
-	//this->resizeRowsToContents();
 }
+
+#pragma clang diagnostic pop

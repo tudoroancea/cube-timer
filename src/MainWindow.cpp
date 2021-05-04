@@ -68,23 +68,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
 		Duration<long long int> duration(currentTime.count());
 		timesList->addTime(duration);
-		//timesList->insertRow(timesList->rowCount());
-		//auto ptr(new QTableWidgetItem(duration.toQString()));
-		//timesList->setItem(timesList->rowCount()-1,0,ptr);
-		//ptr->setFlags(Qt::ItemIsEnabled);
-		//timesList->setItem(timesList->rowCount()-1,1, new QTableWidgetItem(QString()));
-		//timesList->item(timesList->rowCount()-1,1)->setFlags(Qt::ItemIsEnabled);
-		//timesList->setItem(timesList->rowCount()-1,2, new QTableWidgetItem(QString()));
-		//timesList->item(timesList->rowCount()-1,2)->setFlags(Qt::ItemIsEnabled);
-		//timesList->resizeColumnsToContents();
-		//timesList->resizeRowsToContents();
 	} else {
 		switch (event->key()) {
-			//case Qt::Key_T: {
-			//    	auto filename = QFileDialog::getOpenFileName(this, "Open File", "~/CLionProjects/game_of_life/data");
-			//	    this->statusBar()->showMessage(filename);
-			//    break;
-			//}
 			case Qt::Key_N:
 		        scrambleLabel->setText(Scramble().toQString());
 			    break;
@@ -158,7 +143,6 @@ void MainWindow::createLabels() {
 	this->setCentralWidget(timeLabel);
 
 	scrambleLabel->setAlignment(Qt::AlignCenter);
-	//scrambleLabel->resize(500,100);
 	scrambleLabel->move(0,0);
 	font = scrambleLabel->font();
 	font.setPointSize(15);

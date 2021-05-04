@@ -1,3 +1,18 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-override"
+#pragma ide diagnostic ignored "modernize-pass-by-value"
+#pragma ide diagnostic ignored "readability-make-member-function-const"
+#pragma ide diagnostic ignored "readability-container-size-empty"
+#pragma ide diagnostic ignored "modernize-loop-convert"
+#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
+#pragma ide diagnostic ignored "bugprone-branch-clone"
+#pragma ide diagnostic ignored "UnusedValue"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma ide diagnostic ignored "google-explicit-constructor"
+#pragma ide diagnostic ignored "UnusedLocalVariable"
+#pragma ide diagnostic ignored "OCInconsistentNamingInspection"
+#pragma ide diagnostic ignored "modernize-use-noexcept"
+#pragma ide diagnostic ignored "modernize-use-nodiscard"
 /*
  * rapidcsv.h
  *
@@ -1650,3 +1665,5 @@ namespace rapidcsv
 #endif
   };
 }
+
+#pragma clang diagnostic pop
