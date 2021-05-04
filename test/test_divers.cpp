@@ -12,12 +12,29 @@
 #include <chrono>
 #include <vector>
 #include <filesystem>
+#include <limits>
 namespace fs = std::filesystem;
 
-int main() {
-	std::vector<Duration<int>> tab{999,1000,601000,572091,0,12,98,122,60122};
-	for (auto const& num : tab) {
-		std::cout << num.toString().data() << std::endl;
-	}
+int main(int argc, char** argv) {
+//	// Get the last position of '/'
+//	std::string aux(argv[0]);
+//
+//	// get '/' or '\\' depending on unix/mac or windows.
+//#if defined(_WIN32) || defined(WIN32)
+//	int pos = aux.rfind('\\');
+//#else
+//	int pos = aux.rfind('/');
+//#endif
+//
+//	// Get the path and the name
+//	std::string path = aux.substr(0,pos+1);
+//	std::string name = aux.substr(pos+1);
+//	// show results
+//	std::cout << "Path: " << path << std::endl;
+//	std::cout << "Name: " << name << std::endl;
+//	fs::current_path("/")
+	std::cout << Duration<int>(0).toString() << std::endl;
+	std::cout << std::boolalpha << (typeid(long long int)==typeid(long long)) << std::endl;
+	auto x = std::stoll("");
     return 0;
 }

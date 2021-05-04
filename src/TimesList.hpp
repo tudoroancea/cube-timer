@@ -9,11 +9,13 @@
 #include "Duration.hpp"
 
 #include <QTableWidget>
+#include <filesystem>
 
 namespace csv = rapidcsv;
 
 class TimesList : public QTableWidget {
 private:
+	std::filesystem::path resourcePath;
 	csv::Document resource;
 public:
 	TimesList(char* const& argv0, QWidget* parent);
