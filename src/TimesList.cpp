@@ -16,9 +16,13 @@ namespace fs = std::filesystem;
 
 void TimesList::readCurrentCSV() {
 	this->clearContents();
-	this->setRowCount(resource.GetRowCount());
+	size_t N(resource.GetRowCount());
+	this->setRowCount(N);
 	long long readValue(0);
 	for (int i(0); i < resource.GetRowCount(); ++i) {
+		//auto newVertLabel(new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
+		//this->setVerticalHeaderItem(i,newVertLabel);
+		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
 		for (int j(0); j < resource.GetColumnCount(); ++j) {
 			readValue = resource.GetCell<long long>(j, i);
 			QTableWidgetItem* newItem;
@@ -28,9 +32,7 @@ void TimesList::readCurrentCSV() {
 				newItem = new QTableWidgetItem(QString());
 			}
 			newItem->setFlags(Qt::ItemIsEnabled);
-			this->setItem(i,j,newItem);
-			this->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-			this->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+			this->setItem(N-i-1,j,newItem);
 		}
 	}
 	this->resizeColumnsToContents();
@@ -42,6 +44,8 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	this->setWordWrap(false);
 	this->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	this->setFocusPolicy(Qt::NoFocus);
+	this->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	this->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
 	defaultPath = fs::path(argv0);
 	defaultPath /= "../../Resources/default.csv";
@@ -59,12 +63,12 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 	if (oldRowCountTable == oldRowCountCSV) {
 		// On ajoute le temps
 		resource.SetCell<long long>(0, oldRowCountCSV, toAdd.toT());
-		this->setRowCount(oldRowCountTable+1);
+		this->insertRow(0);
 		auto newItem(new QTableWidgetItem(toAdd.toQString()));
-		this->setItem(oldRowCountTable,0,newItem);
+		this->setItem(0,0,newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
 		// On calcule les mo3, ao5 et ao12
-		if (oldRowCountTable >= 2) {
+		if (oldRowCountCSV >= 2) {
 			long long mo3(0);
 			for (size_t i(oldRowCountCSV-2); i <= oldRowCountCSV; ++i) {
 				mo3 += resource.GetCell<long long>("time", i);
@@ -75,8 +79,8 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		this->setItem(oldRowCountTable, 1, newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
+		this->setItem(0, 1, newItem);
 
 		if (oldRowCountCSV >= 4) {
 			long long ao5(0);
@@ -99,8 +103,8 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		this->setItem(oldRowCountTable, 2, newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
+		this->setItem(0, 2, newItem);
 
 		if (oldRowCountCSV >= 11) {
 			long long ao12(0);
@@ -123,13 +127,17 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		this->setItem(oldRowCountTable, 3, newItem);
 		newItem->setFlags(Qt::ItemIsEnabled);
+		this->setItem(0, 3, newItem);
+
+		//auto newVertLabel(new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
+		//this->setVerticalHeaderItem(0,newVertLabel);
+		this->setVerticalHeaderItem(0,new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
+		this->resizeRowsToContents();
+		this->resizeColumnsToContents();
 	} else {
 		std::cerr << "CSV file and table don't have the same number of rows" << std::endl;
 	}
-	this->resizeRowsToContents();
-	this->resizeColumnsToContents();
 }
 
 void TimesList::loadDefaultCSV() {
