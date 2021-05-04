@@ -66,7 +66,7 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		// On calcule les ao5 et ao12
 		if (oldRowCountCSV >= 4) {
 			long long ao5(0);
-			for (size_t i(oldRowCountCSV); i > oldRowCountCSV - 4; --i) {
+			for (size_t i(oldRowCountCSV-4); i <= oldRowCountCSV; ++i) {
 				ao5 += resource.GetCell<long long>("time", i);
 			}
 			ao5 /= 5;
@@ -79,7 +79,7 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		newItem->setFlags(Qt::ItemIsEnabled);
 		if (oldRowCountCSV >= 11) {
 			long long ao12(0);
-			for (size_t i(oldRowCountCSV); i > oldRowCountCSV - 11; --i) {
+			for (size_t i(oldRowCountCSV-11); i <= oldRowCountCSV; ++i) {
 				ao12 += resource.GetCell<long long>("time", i);
 			}
 			ao12 /= 12;

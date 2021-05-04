@@ -60,11 +60,12 @@ MainWindow::~MainWindow() {
 void MainWindow::keyPressEvent(QKeyEvent* event) {
 	QWidget::keyPressEvent(event);
 	if (timer->isActive()) {
-		std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
 		timer->stop();
+		std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
+		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
+		timeLabel->setText(Duration<long long int>(currentTime.count()).toQString());
 		stoppedChronoJustBefore = true;
 		scrambleLabel->setText(Scramble().toQString());
-		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
 		Duration<long long int> duration(currentTime.count());
 		timesList->addTime(duration);
 	} else {
