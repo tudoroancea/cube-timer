@@ -6,7 +6,6 @@
 #include "Duration.hpp"
 #include "Scramble.hpp"
 #include "TimesList.hpp"
-#include "rapidcsv.h"
 
 #include <QApplication>
 #include <QtWidgets>

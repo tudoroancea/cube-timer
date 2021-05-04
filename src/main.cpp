@@ -1,5 +1,4 @@
 #include "MainWindow.hpp"
-#include "MainWindow2.hpp"
 #include <QApplication>
 
 

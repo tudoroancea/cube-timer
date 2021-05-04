@@ -49,8 +49,8 @@ public slots:
 	void changeDisplayedTime();
 
 public:
-	MainWindow(char* const& argv0);
-	~MainWindow();
+	explicit MainWindow(char* const& argv0);
+	~MainWindow() override;
 	void keyPressEvent(QKeyEvent* event) override;
 	void keyReleaseEvent(QKeyEvent* event) override;
 };
