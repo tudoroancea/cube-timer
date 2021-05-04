@@ -12,14 +12,14 @@ target_link_libraries(timer ${REQUIRED_LIBS_QUALIFIED})
 # Main Target ================================================================================
 if (APPLE)
 #	Set icon file paths
-	set(MACOSX_BUNDLE_ICON_FILE data/icon.icns)
-	set(APP_ICON_MACOSX data/icon.icns)
+	set(MACOSX_BUNDLE_ICON_FILE icon.icns)
+	set(APP_ICON_MACOSX icon.icns)
 	set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 #	Set other Resources
 	set(RESOURCES_FILES
 		data/default.csv)
 #	Create the executable and links the libraries
-	add_executable(${PROJECT_NAME} MACOSX_BUNDLE main.cpp files.qrc data/icon.icns data/default.csv)
+	add_executable(${PROJECT_NAME} MACOSX_BUNDLE main.cpp files.qrc icon.icns data/default.csv)
 	target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} timer)
 #	Set various bundle properties
 	set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -27,7 +27,7 @@ if (APPLE)
 						  MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
 						  MACOSX_BUNDLE_COPYRIGHT "Copyright © Tudor Oancea. Tous droits réservés."
 						  MACOSX_BUNDLE_GUI_IDENTIFIER "com.tudor.oancea.${PROJECT_NAME}"
-						  MACOSX_BUNDLE_ICON_FILE "data/icon.icns"
+						  MACOSX_BUNDLE_ICON_FILE "icon.icns"
 						  RESOURCE "${RESOURCES_FILES}")
 
 	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND plutil -replace NSHighResolutionCapable -bool true ${PROJECT_NAME}.app/Contents/Info.plist)
