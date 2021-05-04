@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(cube-timer LANGUAGES CXX VERSION 0.1.0)
+project(cube-timer LANGUAGES CXX VERSION 1.1.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
