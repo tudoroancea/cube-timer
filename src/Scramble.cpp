@@ -65,7 +65,40 @@ bool repeated(Moves const& lhs, Moves const& rhs) {
 		}
 	}
 }
-
+bool indepdent(Moves const& lhs, Moves const& rhs) {
+	switch (lhs) {
+		case R:
+		case Rp:
+		case R2: {
+			return (rhs == L || rhs == Lp || rhs == L2);
+		}
+		case U:
+		case Up:
+		case U2: {
+			return (rhs == D || rhs == Dp || rhs == D2);
+		}
+		case F:
+		case Fp:
+		case F2: {
+			return (rhs == B || rhs == Bp || rhs == B2);
+		}
+		case L:
+		case Lp:
+		case L2: {
+			return (rhs == R || rhs == Rp || rhs == R2);
+		}
+		case D:
+		case Dp:
+		case D2: {
+			return (rhs == U || rhs == Up || rhs == U2);
+		}
+		case B:
+		case Bp:
+		case B2: {
+			return (rhs == F || rhs == Fp || rhs == F2);
+		}
+	}
+}
 Scramble::Scramble() {
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -74,7 +107,8 @@ Scramble::Scramble() {
 	for (size_t i(1); i < 20; ++i) {
 		do {
 			moves[i] = Moves(distrib(gen));
-		} while (repeated(moves[i], moves[i-1]));
+		} while (repeated(moves[i], moves[i-1]) ||
+				 (i >= 2 && indepdent(moves[i], moves[i - 1]) && repeated(moves[i],moves[i - 2])));
 	}
 }
 
