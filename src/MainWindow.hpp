@@ -51,6 +51,7 @@ private:
 
 	//	Settings ========================
 	int launchingInterval = 300;
+	bool autoSave = true;
 
 	// Actions =========
 	std::unordered_map<std::string, QAction*> actions;

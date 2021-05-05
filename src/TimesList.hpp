@@ -45,7 +45,10 @@ public:
 	/**
 	 * @return currentCSVIsDefault value
 	 */
-	bool isCurrentCSVDefault() const;
+	[[nodiscard]] bool isCurrentCSVDefault() const;
+
+	enum Error{wrongPath, wrongFormat};
+	static bool hasRightFormat(std::string const& pathToCSV);
 
 public slots:
 	/**
@@ -57,11 +60,6 @@ public slots:
 	 * @param pathToCSV
 	 */
 	void loadCustomCSV(const std::string& pathToCSV);
-	/**
-	 * @brief Load data from custom CSV. WARNING: does not saveToCurrentCSV previously loaded data
-	 * @param pathToCSV
-	 */
-	void loadCustomCSV(const std::filesystem::path& pathToCSV);
 	/**
 	 * @brief Saves data to the currently loaded CSV (default or custom location)
 	 */
@@ -75,11 +73,6 @@ public slots:
 	 * @param pathToCSV
 	 */
 	void saveToCustomCSV(const std::string& pathToCSV);
-	/**
-	 * @brief Saves data to a custom location. If the given CSV file already exists overrides it, otherwise creates a new file.
-	 * @param pathToCSV
-	 */
-	void saveToCustomCSV(const std::filesystem::path& pathToCSV);
 };
 
 

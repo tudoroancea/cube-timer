@@ -59,6 +59,9 @@ MainWindow::MainWindow(char* const& argv0)
 }
 
 MainWindow::~MainWindow() {
+	if (autoSave) {
+		timesList->saveToCurrentCSV();
+	}
 	delete timeLabel;
 	delete scrambleLabel;
 	delete timer;
@@ -229,7 +232,24 @@ void MainWindow::loadCustomCSV() {
 	if (letsDoIt) {
 		QString path(QFileDialog::getOpenFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
 		if (!path.isEmpty()) {
-			timesList->loadDefaultCSV();
+			try {
+				timesList->loadCustomCSV(path.toStdString());
+			} catch (TimesList::Error const& err) {
+				QString message;
+				switch (err) {
+					case TimesList::wrongPath: {
+						message = QString("There was a problem with the given path. The document has not been open.");
+						break;
+					}
+					case TimesList::wrongFormat:
+						message = QString("The given file did not have the right format (not 4 columns or not the right headers). The new data has not been loaded.");
+						break;
+					default:
+						break;
+				}
+				//QMessageBox::StandardButton newReply(QMessageBox::warning(this, "", message));
+				QMessageBox::warning(this, "", message);
+			}
 		}
 	}
 }

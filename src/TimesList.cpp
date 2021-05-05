@@ -52,9 +52,7 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	this->loadDefaultCSV();
 }
 
-TimesList::~TimesList() {
-	resource.Save();
-}
+TimesList::~TimesList() {}
 
 void TimesList::addTime(Duration<long long> const& toAdd) {
 	size_t oldRowCountTable(this->rowCount()), oldRowCountCSV(resource.GetRowCount());
@@ -142,36 +140,77 @@ bool TimesList::isCurrentCSVDefault() const {
 	return currentCSVIsDefault;
 }
 
+bool areEqual(std::vector<std::string> const& lhs, std::vector<std::string> const& rhs) {
+	if (lhs.size() != rhs.size()) {
+		return false;
+	} else {
+		for (size_t i(0); i < lhs.size(); ++i) {
+			if (lhs[i] != rhs[i]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool TimesList::hasRightFormat(const std::string& pathToCSV) {
+	csv::Document toVerify(pathToCSV);
+	if (toVerify.GetColumnCount() != 4 || !areEqual(toVerify.GetColumnNames(),{"time","mo3","ao5","ao12"})) {
+		return false;
+	}
+	return true;
+}
+
 void TimesList::loadDefaultCSV() {
 	currentCSVIsDefault = true;
+	csv::Document newResource;
 	try {
-		resource.Load(defaultPath.string(),
+		newResource.Load(defaultPath.string(),
 		              csv::LabelParams(0,-1),
 		              csv::SeparatorParams(),
 		              csv::ConverterParams(true, 0.0, 0));
 	}
 	catch (...) {
-		std::cerr << "Document not opened" << std::endl;
+		#ifdef DEBUG_MODE
+		std::cerr << "Document not opened because the path was wrong." << std::endl; // Error : wrongPath
+		#endif
+		throw wrongPath;
 	}
-	this->readCurrentCSV();
+	if (hasRightFormat(defaultPath.string())) {
+		resource = newResource;
+		this->readCurrentCSV();
+	} else {
+		#ifdef DEBUG_MODE
+		std::cerr << "Default CVS has been corrupted. The new data has not been loaded." << std::endl; // Error : corruptedDefaultCSV OR wrongFormat
+		#endif
+		throw wrongFormat;
+	}
 }
 
 void TimesList::loadCustomCSV(const std::string& pathToCSV) {
 	currentCSVIsDefault = false;
+	csv::Document newResource;
 	try {
-		resource.Load(pathToCSV,
+		newResource.Load(pathToCSV,
 		              csv::LabelParams(0,-1),
 		              csv::SeparatorParams(),
 		              csv::ConverterParams(true, 0.0, 0));
 	}
 	catch (...) {
-		std::cerr << "Document not opened" << std::endl;
+		#ifdef DEBUG_MODE
+		std::cerr << "Document not opened because the path was wrong." << std::endl; // Error : wrongPath
+		#endif
+		throw wrongPath;
 	}
-	this->readCurrentCSV();
-}
-
-void TimesList::loadCustomCSV(const std::filesystem::path& pathToCSV) {
-	this->loadCustomCSV(fs::canonical(pathToCSV).string());
+	if (hasRightFormat(pathToCSV)) {
+		resource = newResource;
+		this->readCurrentCSV();
+	} else {
+		#ifdef DEBUG_MODE
+		std::cerr << "Custom CVS does not have the right format (not 4 columns or not the right headers). The new data has not been loaded." << std::endl;
+		#endif
+		throw wrongFormat;
+	}
 }
 
 void TimesList::saveToCurrentCSV() {
@@ -184,10 +223,6 @@ void TimesList::saveToDefaultCSV() {
 
 void TimesList::saveToCustomCSV(const std::string& pathToCSV) {
 	resource.Save(pathToCSV);
-}
-
-void TimesList::saveToCustomCSV(const std::filesystem::path& pathToCSV) {
-	resource.Save(fs::canonical(pathToCSV).string());
 }
 
 #pragma clang diagnostic pop
