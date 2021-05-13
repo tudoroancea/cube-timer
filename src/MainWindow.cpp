@@ -6,7 +6,7 @@
 #include "Duration.hpp"
 #include "Scramble.hpp"
 #include "TimesList.hpp"
-#include "SettingsDialog.h"
+#include "SettingsDialog.hpp"
 
 #include <QApplication>
 #include <QtWidgets>
@@ -80,7 +80,7 @@ MainWindow::MainWindow(char* const& argv0)
 }
 
 MainWindow::~MainWindow() {
-    if (settings->getSetting("autoSave", QVariant(false), this).toBool()) {
+	if (settings->getSetting("autoSave", QVariant(false), this).toBool()) {
 		timesList->saveToCurrentCSV();
 	} else {
 		QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save data to current CSV ? "));
@@ -108,14 +108,14 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 	} else {
 		switch (event->key()) {
 			case Qt::Key_N:
-		        scrambleLabel->setText(Scramble().toQString());
-			    break;
+				scrambleLabel->setText(Scramble().toQString());
+				break;
 			case Qt::Key_Space: {
 				if (!event->isAutoRepeat()) {
 					this->makeTimeRed();
 					launchingTimer->start(settings->getSetting("launchingInterval", QVariant(300), this).toInt());
 				}
-			    break;
+				break;
 			}
 			default:
 				break;
@@ -267,7 +267,7 @@ void MainWindow::loadDefaultCSV() {
 			}
 			case QMessageBox::No:
 				timesList->loadDefaultCSV();
-			    break;
+				break;
 			default:
 				break;
 		}

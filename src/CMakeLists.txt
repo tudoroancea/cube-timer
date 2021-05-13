@@ -8,7 +8,7 @@ add_library(timer STATIC
 			TimesList.cpp TimesList.hpp
 			libs/rapidcsv.h
 			Settings.cpp Settings.hpp
-			SettingsDialog.h SettingsDialog.cpp
+			SettingsDialog.hpp SettingsDialog.cpp
 			)
 target_link_libraries(timer ${REQUIRED_LIBS_QUALIFIED})
 # Main Target ================================================================================

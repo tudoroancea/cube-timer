@@ -39,9 +39,9 @@ Settings::Settings(char* const& argv0) {
 		#endif
 		try {
 			data.Load(defaultSettingsPath.string(),
-			          csv::LabelParams(0,0),
-			          csv::SeparatorParams(),
-			          csv::ConverterParams(true, 0.0, 0));
+					  csv::LabelParams(0,0),
+					  csv::SeparatorParams(),
+					  csv::ConverterParams(true, 0.0, 0));
 		} catch (...) {
 			#ifdef DEBUG_MODE
 			std::cerr << "Default settings file not found." << std::endl;
@@ -88,9 +88,9 @@ bool Settings::settingExists(QString const& key) {
 
 void Settings::reset() {
 	data.Load(defaultSettingsPath.string(),
-	          csv::LabelParams(0,0),
-	          csv::SeparatorParams(),
-	          csv::ConverterParams(true, 0.0, 0));
+			  csv::LabelParams(0,0),
+			  csv::SeparatorParams(),
+			  csv::ConverterParams(true, 0.0, 0));
 	data.Save(settingsPath.string());
 }
 

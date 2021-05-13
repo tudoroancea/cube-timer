@@ -166,9 +166,9 @@ void TimesList::loadDefaultCSV() {
 	csv::Document newResource;
 	try {
 		newResource.Load(defaultPath.string(),
-		              csv::LabelParams(0,-1),
-		              csv::SeparatorParams(),
-		              csv::ConverterParams(true, 0.0, 0));
+					  csv::LabelParams(0,-1),
+					  csv::SeparatorParams(),
+					  csv::ConverterParams(true, 0.0, 0));
 	}
 	catch (...) {
 		#ifdef DEBUG_MODE
@@ -192,9 +192,9 @@ void TimesList::loadCustomCSV(const std::string& pathToCSV) {
 	csv::Document newResource;
 	try {
 		newResource.Load(pathToCSV,
-		              csv::LabelParams(0,-1),
-		              csv::SeparatorParams(),
-		              csv::ConverterParams(true, 0.0, 0));
+					  csv::LabelParams(0,-1),
+					  csv::SeparatorParams(),
+					  csv::ConverterParams(true, 0.0, 0));
 	}
 	catch (...) {
 		#ifdef DEBUG_MODE

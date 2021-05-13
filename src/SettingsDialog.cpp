@@ -2,7 +2,7 @@
 // Created by Tudor Oancea on 12/05/2021.
 //
 
-#include "SettingsDialog.h"
+#include "SettingsDialog.hpp"
 
 #include <QBoxLayout>
 #include <QToolBox>
@@ -15,20 +15,20 @@
 
 
 SettingsDialog::SettingsDialog(Settings* settings, QWidget *parent)
-    : settings(settings), QDialog(parent)
+	: settings(settings), QDialog(parent)
 {
-    QVBoxLayout* verticalLayout;
-    verticalLayout = new QVBoxLayout(this);
-    auto* toolbox = new QToolBox;
-    verticalLayout->addWidget(toolbox);
+	QVBoxLayout* verticalLayout;
+	verticalLayout = new QVBoxLayout(this);
+	auto* toolbox = new QToolBox;
+	verticalLayout->addWidget(toolbox);
 
-    // Page 1 ====================================================================================
-    auto page1 = new QWidget;
-    auto layout1 = new QGridLayout;
+	// Page 1 ====================================================================================
+	auto page1 = new QWidget;
+	auto layout1 = new QGridLayout;
 	page1->setLayout(layout1);
-    // Launching interval ========================
-    auto launchingIntervalLabel = new QLabel("Launching Interval (in milliseconds)");
-    //launchingIntervalLabel->setFrameStyle(QFrame::Raised|QFrame::Panel);
+	// Launching interval ========================
+	auto launchingIntervalLabel = new QLabel("Launching Interval (in milliseconds)");
+	//launchingIntervalLabel->setFrameStyle(QFrame::Raised|QFrame::Panel);
 	layout1->addWidget(launchingIntervalLabel, 0, 0);
 	auto input(new QLineEdit);
 	input->setText(this->settings->getSetting("launchingInterval", QVariant(""), this).toString());
@@ -49,9 +49,9 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget *parent)
 	layout2->addWidget(checkBox);
 
 	// Adding the pages ====================================================================================
-    toolbox->addItem(page2, tr("General"));
-    toolbox->addItem(page1, tr("Timer"));
+	toolbox->addItem(page2, tr("General"));
+	toolbox->addItem(page1, tr("Timer"));
 
-    this->resize(350,200);
-    setWindowTitle(QGuiApplication::applicationDisplayName());
+	this->resize(350,200);
+	setWindowTitle(QGuiApplication::applicationDisplayName());
 }

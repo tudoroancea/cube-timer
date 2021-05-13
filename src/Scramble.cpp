@@ -119,7 +119,7 @@ Moves& Scramble::operator[](const size_t& i) {
 std::string Scramble::toString() const {
 	std::string result;
 	for (const auto & move : moves) {
-	    result += ::toString(move)+" ";
+		result += ::toString(move)+" ";
 	}
 	return result;
 }
