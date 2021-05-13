@@ -7,6 +7,8 @@ add_library(timer STATIC
 			Scramble.cpp Scramble.hpp
 			TimesList.cpp TimesList.hpp
 			libs/rapidcsv.h
+			Settings.cpp Settings.hpp
+			SettingsDialog.h SettingsDialog.cpp
 			)
 target_link_libraries(timer ${REQUIRED_LIBS_QUALIFIED})
 # Main Target ================================================================================
@@ -17,17 +19,27 @@ if (APPLE)
 	set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 #	Set other Resources
 	set(RESOURCES_FILES
-		data/default.csv)
+		data/default-historic.csv
+		data/default-settings.csv
+		data/settings.csv
+		)
 #	Create the executable and links the libraries
-	add_executable(${PROJECT_NAME} MACOSX_BUNDLE main.cpp files.qrc icon.icns data/default.csv)
+	add_executable(${PROJECT_NAME} MACOSX_BUNDLE
+				   main.cpp
+				   files.qrc
+				   icon.icns
+				   data/default-historic.csv
+				   data/default-settings.csv
+				   data/settings.csv
+				   )
 	target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} timer)
-#	Set various bundle properties
+#	Set bundle properties
 	set_target_properties(${PROJECT_NAME} PROPERTIES
 						  MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}"
 						  MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
 						  MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
 						  MACOSX_BUNDLE_LONG_VERSION_STRING "${PROJECT_VERSION}"
-						  MACOSX_BUNDLE_COPYRIGHT "Copyright © Tudor Oancea. Tous droits réservés."
+						  MACOSX_BUNDLE_COPYRIGHT "Copyright © Tudor Oancea, 2021. Licensed under the MIT Licence."
 						  MACOSX_BUNDLE_GUI_IDENTIFIER "com.tudor.oancea.${PROJECT_NAME}"
 						  MACOSX_BUNDLE_ICON_FILE "icon.icns"
 						  RESOURCE "${RESOURCES_FILES}")

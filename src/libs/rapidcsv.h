@@ -150,7 +150,7 @@ namespace rapidcsv
           typeid(T) == typeid(char))
       {
         std::ostringstream out;
-        out << pVal;
+        //static_cast<QDebug>(out) << (basic_ios <char_type>& (*)(basic_ios <char_type>&)) pVal;
         pStr = out.str();
       }
       else
@@ -247,6 +247,8 @@ namespace rapidcsv
       {
         pVal = static_cast<T>(pStr[0]);
         return;
+      } else if (typeid(T) == typeid(bool)) {
+      	pVal = (pStr == "true");
       }
       else
       {

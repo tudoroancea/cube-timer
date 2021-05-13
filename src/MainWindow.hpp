@@ -6,8 +6,11 @@
 #define CUBE_TIMER_MAINWINDOW_HPP
 
 #include "TimesList.hpp"
+#include "libs/rapidcsv.h"
+#include "Settings.hpp"
 
 #include <QMainWindow>
+#include <filesystem>
 #include <unordered_map>
 
 QT_BEGIN_NAMESPACE
@@ -39,19 +42,25 @@ private:
 	QHBoxLayout* mainLayout;
 	TimesList* timesList;
 
-	//	Status info ============
-	/**
-	 * @brief contains argv[0]
-	 */
-	char* exePath;
+	// Behavior helps =====================
 	/**
 	 * @brief Used to ensure that when the timer is running and we press space, it doesn't start again when we release the space bar
 	 */
 	bool stoppedChronoJustBefore = false;
 
-	//	Settings ========================
-	int launchingInterval = 300;
-	bool autoSave = true;
+	//	Global info / settings ============
+	/**
+	 * @brief contains argv[0]
+	 */
+	[[maybe_unused]] char* exePath;
+	/**
+	 * @brief Brief description of the app to display in the About action
+	 */
+	QString aboutMessage;
+	/**
+	 * @brief Pretty self-explanatory
+	 */
+	Settings* settings;
 
 	// Actions =========
 	std::unordered_map<std::string, QAction*> actions;
@@ -64,6 +73,7 @@ private:
 	void createLabels();
 	void createActions();
 	void createMenus();
+	void createAboutMessage();
 
 private slots:
 	/**
@@ -90,6 +100,8 @@ private slots:
 	void saveAs();
 	void loadDefaultCSV();
 	void loadCustomCSV();
+	void openPreferences();
+	void about();
 
 public:
 	explicit MainWindow(char* const& argv0);

@@ -46,7 +46,7 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	this->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
 	defaultPath = fs::path(argv0);
-	defaultPath /= "../../Resources/default.csv";
+	defaultPath /= "../../Resources/default-historic.csv";
 	defaultPath = fs::canonical(defaultPath);
 
 	this->loadDefaultCSV();
@@ -172,7 +172,7 @@ void TimesList::loadDefaultCSV() {
 	}
 	catch (...) {
 		#ifdef DEBUG_MODE
-		std::cerr << "Document not opened because the path was wrong." << std::endl; // Error : wrongPath
+		std::cerr << "Default CSV not found." << std::endl; // Error : wrongPath
 		#endif
 		throw wrongPath;
 	}
@@ -198,7 +198,7 @@ void TimesList::loadCustomCSV(const std::string& pathToCSV) {
 	}
 	catch (...) {
 		#ifdef DEBUG_MODE
-		std::cerr << "Document not opened because the path was wrong." << std::endl; // Error : wrongPath
+		std::cerr << "Default CSV not found." << std::endl; // Error : wrongPath
 		#endif
 		throw wrongPath;
 	}

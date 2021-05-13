@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(cube-timer LANGUAGES CXX VERSION 1.1.2)
+project(cube-timer LANGUAGES CXX VERSION 1.2.0)
 
 # C++ standard
 set(CXX_STANDARD_REQUIRED ON)
@@ -22,6 +22,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
 	add_compile_definitions(RELEASE_MODE)
 endif()
 add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
+add_compile_definitions(GLOBAL_PATH="${CMAKE_SOURCE_DIR}")
 
 # Qt5 import
 set(CMAKE_AUTOMOC ON)
