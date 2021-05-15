@@ -14,6 +14,7 @@
 #include <QVariant>
 #include <QString>
 #include <QGuiApplication>
+#include <QIntValidator>
 
 
 SettingsDialog::SettingsDialog(Settings* settings, QWidget *parent)
@@ -34,7 +35,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget *parent)
 	layout1->addWidget(launchingIntervalLabel, 0, 0);
 	auto input(new QLineEdit);
 	input->setText(this->settings->getSetting("launchingInterval", QVariant(""), this).toString());
-	input->setInputMask("D000");
+	input->setValidator(new QIntValidator(0,5000));
 	QObject::connect(input, &QLineEdit::textChanged, [this](QString const& value){this->settings->setSetting("launchingInterval", QVariant(value.toInt()), this);});
 	layout1->addWidget(input, 0,1);
 

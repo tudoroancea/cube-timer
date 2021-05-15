@@ -112,6 +112,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 			case Qt::Key_N:
 				scrambleLabel->setText(Scramble().toQString());
 				break;
+			case Qt::Key_T:
 			case Qt::Key_Space: {
 				if (!event->isAutoRepeat()) {
 					this->makeTimeRed();
@@ -128,11 +129,15 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 	QWidget::keyReleaseEvent(event);
 	switch(event->key()) {
+		case Qt::Key_T:
 		case Qt::Key_Space: {
 			if (!event->isAutoRepeat()) {
 				if (!timer->isActive() && !stoppedChronoJustBefore) {
 					if (launchingTimer->isActive()) {
-						this->statusBar()->showMessage("One must wait 1s before starting a timer.", 1000);
+						QString message("One must wait ");
+						message += Duration<uint>(settings->getSetting("launchingInterval", QVariant(0), this).toUInt()).toQString();
+						message += "s before starting a timer.";
+						this->statusBar()->showMessage(message, 1000);
 						launchingTimer->stop();
 					} else {
 						timer->start();
