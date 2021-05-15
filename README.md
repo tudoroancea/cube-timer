@@ -1,4 +1,6 @@
 # Cube timer
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/tudoroancea/cube-timer/Build/main?label=Build%20on%20main&logo=github)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/tudoroancea/cube-timer/Build/develop?label=Build%20on%20develop&logo=github)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tudoroancea/cube-timer?label=latest%20release)
 ![GitHub](https://img.shields.io/github/license/tudoroancea/cube-timer)
 ![GitHub top language](https://img.shields.io/github/languages/top/tudoroancea/cube-timer)
