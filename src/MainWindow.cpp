@@ -1,5 +1,7 @@
 //
 // Created by Tudor Oancea on 13/04/2021.
+// Copyright (c) 2021 Tudor Oancea.. All rights reserved.
+// Licensed under the MIT licence (see details at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)
 //
 
 #include "MainWindow.hpp"
@@ -233,7 +235,7 @@ void MainWindow::createMenus() {
 void MainWindow::createAboutMessage() {
 	aboutMessage += "Cube-timer Version ";
 	aboutMessage +=  PROJECT_VERSION;
-	aboutMessage += "\nCopyright © Tudor Oancea 2021.\nLicensed under the MIT Licence.\n\n";
+	aboutMessage += "\nCopyright © 2021 Tudor Oancea.\nLicensed under the MIT Licence (see details at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)\n\n";
 	std::ifstream in(std::string(GLOBAL_PATH)+"/README.md");
 	std::string line;
 	in >> std::ws;
@@ -243,8 +245,9 @@ void MainWindow::createAboutMessage() {
 		std::getline(in, line);
 		aboutMessage += (line+"\n").c_str();
 	}
-	aboutMessage.remove('`');
+	in.close();
 	aboutMessage.remove('*');
+	aboutMessage.remove("```");
 	aboutMessage += "\n\nThe source code can be found at https://github.com/tudoroancea/cube-timer.git";
 }
 

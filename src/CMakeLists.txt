@@ -39,7 +39,7 @@ if (APPLE)
 						  MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
 						  MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
 						  MACOSX_BUNDLE_LONG_VERSION_STRING "${PROJECT_VERSION}"
-						  MACOSX_BUNDLE_COPYRIGHT "Copyright © Tudor Oancea, 2021. Licensed under the MIT Licence."
+						  MACOSX_BUNDLE_COPYRIGHT "Copyright © Tudor Oancea, 2021. Licensed under the MIT Licence (see details at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)"
 						  MACOSX_BUNDLE_GUI_IDENTIFIER "com.tudor.oancea.${PROJECT_NAME}"
 						  MACOSX_BUNDLE_ICON_FILE "icon.icns"
 						  RESOURCE "${RESOURCES_FILES}")
