@@ -1,28 +1,19 @@
-Central widget : timer we can start/stop with space button
-
-- Time the resolutions
-- Save the times :\
-    [x] saveToCurrentCSV times and time stamps (date and hour )
-    [ ] mark them dnf/+2
-    - add commentary
-    => CSV file with numeric/string attributes
-    - delete/modify saved times
-    - several profiles
-- statistics :
-    - nombre de résolutions
-    - calculate ao5, aO12,…
-    - graphs : numpy for C++
-
-- Scrambles :
-  - generate random scrambles (3x3 at least)
-  - scramble image
-## Important:
-- Settings panel. Categories:
+## Important (next to work on):
+[x] Settings panel. Categories:
   - Timer : Launching interval (uint)
   - Saved times
-  Label on the left, 
-- Delete/Modify times by selecting a line or more in the TimesList. There will be a warning dialog to confirm you want to proceed.
-- Starting/Stoping timer with click
+  Label on the left
+
+[ ] Add new metadata (time stamp, scramble)
+=> add preferences for which metada to display
+
+[ ] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a warning dialog to confirm you want to proceed.
+
+[ ] Add commentary metadata. You can modify them by right clicking on one.
+
+[ ] Starting/Stoping timer with click
+
+[ ] Add scramble historic (last 10 scrambles) which allows to redo the last time. OR, add an option 
 
 ## Miscalleneous ideas:
 We can insert new columns in the CSV files each time we pass a new bound (5, 12, 25, 50, 100, 200, 500, 1000…).\
@@ -40,6 +31,8 @@ Redo a scramble (select a previous time and load the scramble)
 
 add button for next scramble and previous scramble (keep the last 10 generated scrambles)
 
+## Long shots:
+- Add scramble image
 ## Very long shots:
 - iCloud synchronization
-- Moves detection with computer vision/AI 
+- Moves detection with computer vision/AI

@@ -1,14 +1,20 @@
 # Cube timer
-This is a simple GUI project using Qt to create a cube timer suited to my needs.
-This implies :
-- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target). It uses in particular the ```.app``` bundle particularities such as the ```Resource``` directory which can contain the CSV file used to saveToCurrentCSV the times.
-- The available features won't ever be very ground-breaking, and I won't develop the ones I don't find useful (even though they may be very popular in the community). *Eg* : I won't implement inspection times or scrambles for cubes larger that 3x3. I won't develop neither stackmat or other physical timers integration, nor smart cubes integration.
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/tudoroancea/cube-timer?label=latest%20release)
+![GitHub](https://img.shields.io/github/license/tudoroancea/cube-timer)
+![GitHub top language](https://img.shields.io/github/languages/top/tudoroancea/cube-timer)
+
+This is a simple GUI project using Qt to create a cube timer suited to my personal needs.
+Concretly this means:
+- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target ```cube-timer```). The main reason for this is that it uses the ```.app``` bundle particularities such as the ```Resource``` directory to save the preferences and data files. If you find easy to  implement alternatives for other platforms I am open to  suggestions ans pull-requests.
+- The available features will probably never be ground-breaking compared to other timers out there, and I won't develop features I don't find particularly useful (even though they may be very popular in the community).\
+For example, I won't implement inspection times for blind or scrambles for cubes larger that 3x3. I won't develop neither stackmat or other physical timers integration, nor smart cubes integration.
 
 ## Current features :
 - Timing at milliseconds precision. One must keep the space bar pressed for 0.3s before launching the timer (customizable).
 - 20 moves scramble generation (non customizable) after each attempt.
 - Generating new scrambles before launching the timer (if you don't like the current one)
 - ao5 and ao12 computed live and saved along with the actual times once the app is closed.
+- Saving the data in a custom location instead of the ```default-historic.csv``` file in the Application.
 - Settings Panel.
 
 ## Copyright
