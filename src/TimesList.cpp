@@ -21,9 +21,9 @@ void TimesList::readCurrentCSV() {
 	size_t N(resource.GetRowCount());
 	this->setRowCount(N);
 	long long readValue(0);
-	for (int i(0); i < resource.GetRowCount(); ++i) {
+	for (int i(0); i < N; ++i) {
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
-		for (int j(0); j < resource.GetColumnCount(); ++j) {
+		for (int j(0); j < 4; ++j) {
 			readValue = resource.GetCell<long long>(j, i);
 			QTableWidgetItem* newItem;
 			if (readValue > 0) {
@@ -56,11 +56,15 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 
 TimesList::~TimesList() {}
 
-void TimesList::addTime(Duration<long long> const& toAdd) {
+void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& scramble, QDateTime const& timeStamp, QString const& comment) {
 	size_t oldRowCountTable(this->rowCount()), oldRowCountCSV(resource.GetRowCount());
 	if (oldRowCountTable == oldRowCountCSV) {
 		// On ajoute le temps
-		resource.SetCell<long long>(0, oldRowCountCSV, toAdd.toT());
+		resource.SetCell<long long>(resource.GetColumnIdx("time"), oldRowCountCSV, toAdd.toT());
+		resource.SetCell<std::string>(resource.GetColumnIdx("scramble"), oldRowCountCSV, scramble.toString());
+		resource.SetCell<std::string>(resource.GetColumnIdx("timeStamp"), oldRowCountCSV, timeStamp.toString("yyyy-MM-dd-hh:mm:ss.zzz").toStdString());
+		resource.SetCell<std::string>(resource.GetColumnIdx("comment"), oldRowCountCSV, comment.toStdString());
+
 		this->insertRow(0);
 		auto newItem(new QTableWidgetItem(toAdd.toQString()));
 		this->setItem(0,0,newItem);
@@ -128,8 +132,6 @@ void TimesList::addTime(Duration<long long> const& toAdd) {
 		newItem->setFlags(Qt::ItemIsEnabled);
 		this->setItem(0, 3, newItem);
 
-		//auto newVertLabel(new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
-		//this->setVerticalHeaderItem(0,newVertLabel);
 		this->setVerticalHeaderItem(0,new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
 		this->resizeRowsToContents();
 		this->resizeColumnsToContents();
@@ -154,10 +156,23 @@ bool areEqual(std::vector<std::string> const& lhs, std::vector<std::string> cons
 	}
 	return true;
 }
+bool isStartOf(std::vector<std::string> const& lhs, std::vector<std::string> const& rhs) {
+	if (lhs.size() > rhs.size()) {
+		return false;
+	} else {
+		for (size_t i(0); i < lhs.size(); ++i) {
+			if (lhs[i] != rhs[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
 
 bool TimesList::hasRightFormat(const std::string& pathToCSV) {
 	csv::Document toVerify(pathToCSV);
-	if (toVerify.GetColumnCount() != 4 || !areEqual(toVerify.GetColumnNames(),{"time","mo3","ao5","ao12"})) {
+	// TODO : try to delete toVerify.GetColumnCount() != 6
+	if (!isStartOf(toVerify.GetColumnNames(),{"time","mo3","ao5","ao12","scramble","timeStamp","comment"})) {
 		return false;
 	}
 	return true;

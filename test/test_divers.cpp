@@ -22,11 +22,15 @@
 #include <limits>
 
 namespace fs = std::filesystem;
+namespace csv = rapidcsv;
 using namespace std;
 
 
 int main(int argc, char** argv) {
-
+	csv::Document doc("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv", csv::LabelParams(-1,-1));
+	std::cout << doc.GetCell<std::string>(0,0);
+	//doc.SetCell<std::string>(0,0,"hey");
+	//doc.Save();
 	return 0;
 }
 #pragma clang diagnostic pop

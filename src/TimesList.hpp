@@ -9,8 +9,10 @@
 
 #include "libs/rapidcsv.h"
 #include "Duration.hpp"
+#include "Scramble.hpp"
 
 #include <QTableWidget>
+#include <QDateTime>
 #include <filesystem>
 
 namespace csv = rapidcsv;
@@ -43,7 +45,7 @@ public:
 	 * @brief Add time to the currently handled CSV data. It won't be saved to a file before the program is closed ot an appropriate method is called.
 	 * @param toAdd
 	 */
-	void addTime(Duration<long long int> const& toAdd);
+	void addTime(Duration<long long int> const& toAdd, Scramble const& scramble, QDateTime const& timeStamp = QDateTime::currentDateTime(), QString const& comment = QString());
 	/**
 	 * @return currentCSVIsDefault value
 	 */

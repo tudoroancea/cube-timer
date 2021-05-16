@@ -48,7 +48,7 @@ MainWindow::MainWindow(char* const& argv0)
 		if (err == TimesList::wrongPath) {
 			QMessageBox::critical(this, "", "The default CSV has not been found. The app cannot start.");
 		} else {
-			QMessageBox::critical(this, "", "The default CSV has been corrupted and hos no longer the right format. The app cannot start.");
+			QMessageBox::critical(this, "", "The default CSV has been corrupted and has no longer the right format. The app cannot start.");
 		}
 		QCoreApplication::exit(1);
 		std::exit(1);
@@ -135,7 +135,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 		// We use the time to update the timeLabel
 		timeLabel->setText(duration.toQString());
 		// We use the time to update the timesList
-		timesList->addTime(duration);
+		timesList->addTime(duration, scramble);
 		// We regenerate the Scramble
 		scramble.regenerate();
 		scrambleLabel->setText(scramble.toQString());
