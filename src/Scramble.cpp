@@ -102,15 +102,19 @@ bool indepdent(Moves const& lhs, Moves const& rhs) {
 	}
 }
 Scramble::Scramble() {
+	this->regenerate();
+}
+
+void Scramble::regenerate() {
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-	std::uniform_int_distribution<long> distrib(0,17);
+	std::uniform_int_distribution<int> distrib(0,17);
 	moves[0] = Moves(distrib(gen));
 	for (size_t i(1); i < 20; ++i) {
 		do {
 			moves[i] = Moves(distrib(gen));
 		} while (repeated(moves[i], moves[i-1]) ||
-				 (i >= 2 && indepdent(moves[i], moves[i - 1]) && repeated(moves[i],moves[i - 2])));
+				(i >= 2 && indepdent(moves[i], moves[i - 1]) && repeated(moves[i],moves[i - 2])));
 	}
 }
 
@@ -127,5 +131,29 @@ std::string Scramble::toString() const {
 }
 
 QString Scramble::toQString() const {
-	return QString(toString().c_str());
+	return QString::fromStdString(toString());
+}
+
+std::string Scramble::stringScramble() {
+	std::string result;
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<int> distrib(0,17);
+	Moves move, oldMove, oldoldMove;
+	oldMove = Moves(distrib(gen));
+	result += ::toString(oldMove)+" ";
+	for (size_t i(1); i < 20; ++i) {
+		do {
+			move = Moves(distrib(gen));
+		} while (repeated(move, oldMove) ||
+				(i >= 2 && indepdent(move,oldMove) && repeated(move, oldoldMove)));
+		result += ::toString(move)+" ";
+		oldoldMove = oldMove;
+		oldMove = move;
+	}
+	return result;
+}
+
+QString Scramble::qstringScramble() {
+	return QString::fromStdString(Scramble::stringScramble());
 }

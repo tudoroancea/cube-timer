@@ -25,8 +25,9 @@ namespace csv = rapidcsv;
 MainWindow::MainWindow(char* const& argv0)
 	: timer(new QTimer),
 	  launchingTimer(new QTimer),
-	  timeLabel(new QLabel("0.000")),
-	  scrambleLabel(new QLabel(Scramble().toQString(), this)),
+	  timeLabel(new QLabel("0.000", this)),
+	  scramble(),
+	  scrambleLabel(new QLabel(scramble.toQString(), this)),
 	  mainLayout(new QHBoxLayout),
 	  exePath(argv0),
 	  settings(nullptr),
@@ -37,7 +38,8 @@ MainWindow::MainWindow(char* const& argv0)
 	} catch (Settings::Error const& err) {
 		if (err.type() == Settings::wrongFormat || err.type() == Settings::wrongPath) {
 			QMessageBox::critical(this, "", "The settings could not be loaded correctly.");
-			QApplication::exit(1);
+			QCoreApplication::exit(1);
+			std::exit(1);
 		}
 	}
 	try {
@@ -48,7 +50,8 @@ MainWindow::MainWindow(char* const& argv0)
 		} else {
 			QMessageBox::critical(this, "", "The default CSV has been corrupted and hos no longer the right format. The app cannot start.");
 		}
-		QApplication::exit(1);
+		QCoreApplication::exit(1);
+		std::exit(1);
 	}
 	this->setWindowTitle("Cube Timer");
 	this->setMinimumSize(700,500);
@@ -85,72 +88,77 @@ MainWindow::~MainWindow() {
 	if (settings->getSetting("autoSave", QVariant(false), this).toBool()) {
 		timesList->saveToCurrentCSV();
 	} else {
-		QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save data to current CSV ? "));
-		if (reply == QMessageBox::Yes) {
-			timesList->saveToCurrentCSV();
+		if (!savedJustBefore) {
+			QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save data to current CSV ? ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes));
+			if (reply == QMessageBox::Yes) {
+				timesList->saveToCurrentCSV();
+			}
 		}
 	}
 	delete timeLabel;
 	delete scrambleLabel;
 	delete timer;
 	delete launchingTimer;
+	delete settings;
+	delete fileMenu;
+	delete mainLayout;
+	for (auto const & action : actions) {
+	    delete action.second;
+	}
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
 	QWidget::keyPressEvent(event);
-	if (timer->isActive()) {
-		timer->stop();
-		std::chrono::time_point<std::chrono::high_resolution_clock> now(std::chrono::high_resolution_clock::now());
-		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(now-startPoint));
-		timeLabel->setText(Duration<long long int>(currentTime.count()).toQString());
-		stoppedChronoJustBefore = true;
-		scrambleLabel->setText(Scramble().toQString());
-		Duration<long long int> duration(currentTime.count());
-		timesList->addTime(duration);
-	} else {
-		switch (event->key()) {
-			case Qt::Key_N:
-				scrambleLabel->setText(Scramble().toQString());
-				break;
-			case Qt::Key_T:
-			case Qt::Key_Space: {
-				if (!event->isAutoRepeat()) {
-					this->makeTimeRed();
-					launchingTimer->start(settings->getSetting("launchingInterval", QVariant(300), this).toInt());
-				}
-				break;
+	if (!timer->isActive()) {
+		// On le lance si on nous le demande
+		if (!event->isAutoRepeat()) {
+			if (event->key() == Qt::Key_Space || event->key() == Qt::Key_T) {
+				this->makeTimeRed();
+				launchingTimer->start(settings->getSetting("launchingInterval", QVariant(300), this).toInt());
+				startingTimer = true;
+				savedJustBefore = false;
 			}
-			default:
-				break;
 		}
+		// On fait les autres trucs nécessaires
+		if (event->key() == Qt::Key_N) {
+			scramble.regenerate();
+			scrambleLabel->setText(scramble.toQString());
+			savedJustBefore = false;
+		}
+	} else {
+		// We stop the timer
+		timer->stop();
+		// We measure the time elapsed since the beginning.
+		std::chrono::time_point<std::chrono::high_resolution_clock> stopPoint(std::chrono::high_resolution_clock::now());
+		std::chrono::milliseconds currentTime(std::chrono::duration_cast<std::chrono::milliseconds>(stopPoint - startPoint));
+		Duration<long long> duration(currentTime.count());
+		// We use the time to update the timeLabel
+		timeLabel->setText(duration.toQString());
+		// We use the time to update the timesList
+		timesList->addTime(duration);
+		// We regenerate the Scramble
+		scramble.regenerate();
+		scrambleLabel->setText(scramble.toQString());
+		savedJustBefore = false;
 	}
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 	QWidget::keyReleaseEvent(event);
-	switch(event->key()) {
-		case Qt::Key_T:
-		case Qt::Key_Space: {
-			if (!event->isAutoRepeat()) {
-				if (!timer->isActive() && !stoppedChronoJustBefore) {
-					if (launchingTimer->isActive()) {
-						QString message("One must wait ");
-						message += Duration<uint>(settings->getSetting("launchingInterval", QVariant(0), this).toUInt()).toQString();
-						message += "s before starting a timer.";
-						this->statusBar()->showMessage(message, 1000);
-						launchingTimer->stop();
-					} else {
-						timer->start();
-						startPoint = std::chrono::high_resolution_clock::now();
-					}
-					this->resetTimeColor();
-				}
-				stoppedChronoJustBefore = false;
-			}
-			break;
+	if (startingTimer && (event->key() == Qt::Key_Space || event->key() == Qt::Key_T)) {
+		if (launchingTimer->isActive()) {
+			QString message("One must wait ");
+			message += Duration<uint>(settings->getSetting("launchingInterval", QVariant(0), this).toUInt()).toQString();
+			message += "s before starting a timer.";
+			this->statusBar()->showMessage(message, 1000);
+
+			launchingTimer->stop();
+		} else {
+			timer->start();
+			startPoint = std::chrono::high_resolution_clock::now();
 		}
-		default:
-			break;
+		startingTimer = false; // In the first case, we were starting the Timer but we must abort, in the second case we just finished successfully. In both cases we are not starting the timer anymore.
+		this->resetTimeColor(); // In the first case the label is still red, in the second case it's green. In both cases it must be reset to black.
 	}
 }
 void MainWindow::changeDisplayedTime() {
@@ -177,7 +185,6 @@ void MainWindow::createTimers() {
 	launchingTimer->setSingleShot(true);
 	connect(launchingTimer, &QTimer::timeout, this, &MainWindow::makeTimeGreen);
 }
-
 void MainWindow::createLabels() {
 	timeLabel->setAlignment(Qt::AlignCenter);
 	QFont font(timeLabel->font());
@@ -192,11 +199,10 @@ void MainWindow::createLabels() {
 	font.setPointSize(15);
 	scrambleLabel->setFont(font);
 }
-
 void MainWindow::createActions() {
 	actions["save"] = new QAction("Save", this);
 	actions["save"]->setShortcut(QKeySequence::Save);
-	connect(actions["save"], SIGNAL(triggered()), timesList, SLOT(saveToCurrentCSV()));
+	connect(actions["save"], SIGNAL(triggered()), this, SLOT(save()));
 
 	actions["saveAs"] = new QAction("Save As", this);
 	actions["saveAs"]->setShortcut(QKeySequence::SaveAs);
@@ -256,10 +262,16 @@ void MainWindow::createAboutMessage() {
 	aboutMessage += "\n\nThe source code can be found at https://github.com/tudoroancea/cube-timer.git";
 }
 
+void MainWindow::save() {
+	timesList->saveToCurrentCSV();
+	savedJustBefore = true;
+}
+
 void MainWindow::saveAs() {
 	QString str(QFileDialog::getSaveFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
 	if (!str.isEmpty()) {
 		timesList->saveToCustomCSV(str.toStdString());
+		savedJustBefore = true;
 	}
 }
 
@@ -280,7 +292,7 @@ void MainWindow::loadDefaultCSV() {
 				break;
 		}
 	} else {
-		this->statusBar()->showMessage("The default CSV is already open", 1000);
+		QMessageBox::information(this, "", "The default CSV is already open.");
 	}
 }
 

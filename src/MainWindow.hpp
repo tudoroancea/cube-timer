@@ -10,6 +10,7 @@
 #include "TimesList.hpp"
 #include "libs/rapidcsv.h"
 #include "Settings.hpp"
+#include "Scramble.hpp"
 
 #include <QMainWindow>
 #include <filesystem>
@@ -40,15 +41,20 @@ private:
 
 	// Widgets
 	QLabel* timeLabel;
+	Scramble scramble;
 	QLabel* scrambleLabel;
 	QHBoxLayout* mainLayout;
 	TimesList* timesList;
 
 	// Behavior helps =====================
 	/**
-	 * @brief Used to ensure that when the timer is running and we press space, it doesn't start again when we release the space bar
+ * @brief Indicates that we are indeed starting the timer (the space bar wasn't pressed to stop the timer)
+ */
+	bool startingTimer = false;
+	/**
+	 * @brief Indicates if the last action was saving (to current location)..
 	 */
-	bool stoppedChronoJustBefore = false;
+	bool savedJustBefore = false;
 
 	//	Global info / settings ============
 	/**
@@ -96,6 +102,10 @@ private slots:
 	void changeDisplayedTime();
 
 //	Actions ==========
+	/**
+	 * @brief Saves data to current CSV (default or custom location)..
+	 */
+	void save();
 	/**
 	 * @brief Saves data to any CSV (default or custom location).
 	 */

@@ -18,9 +18,13 @@ std::string toString(Moves const&);
 struct Scramble{
 	std::array<Moves,20> moves{};
 	Scramble();
+	void regenerate();
 	Moves& operator[](size_t const&);
 	[[nodiscard]] std::string toString() const;
 	[[nodiscard]] QString toQString() const;
+
+	static std::string stringScramble();
+	static QString qstringScramble();
 };
 
 #endif //CUBE_TIMER_SCRAMBLE_HPP
