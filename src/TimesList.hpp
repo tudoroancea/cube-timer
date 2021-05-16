@@ -38,6 +38,19 @@ private:
 	 * @brief Deletes all the content of the QTableWidget and populates it with the current CSV file.
 	 */
 	void readCurrentCSV();
+
+
+private slots:
+	//	Actions =========
+	void modifyComment(int row);
+	void moreInfo(int row);
+	void deleteTime(int row);
+	//void redoScramble(int row);
+	void copyScramble(int row);
+
+protected:
+	void contextMenuEvent(QContextMenuEvent* event) override;
+
 public:
 	TimesList(char* const& argv0, QWidget* parent);
 	~TimesList() override;
@@ -53,6 +66,8 @@ public:
 
 	enum Error{wrongPath, wrongFormat};
 	static bool hasRightFormat(std::string const& pathToCSV);
+	//static void recomputeStatistics(std::string const& pathToCSV);
+
 
 public slots:
 	/**
@@ -77,6 +92,9 @@ public slots:
 	 * @param pathToCSV
 	 */
 	void saveToCustomCSV(const std::string& pathToCSV);
+	void print(int row, int col);
+	void showContextMenu(QPoint const& pos);
+
 };
 
 

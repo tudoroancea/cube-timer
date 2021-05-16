@@ -12,6 +12,14 @@
 #include <QTableWidget>
 #include <QHeaderView>
 #include <filesystem>
+#include <QMenu>
+#include <QContextMenuEvent>
+#include <QInputDialog>
+#include <QDialog>
+#include <QLabel>
+#include <QMessageBox>
+#include <QGuiApplication>
+#include <QClipboard>
 
 namespace csv = rapidcsv;
 namespace fs = std::filesystem;
@@ -31,7 +39,7 @@ void TimesList::readCurrentCSV() {
 			} else {
 				newItem = new QTableWidgetItem(QString());
 			}
-			newItem->setFlags(Qt::ItemIsEnabled);
+			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 			this->setItem(N-i-1,j,newItem);
 		}
 	}
@@ -52,6 +60,14 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	defaultPath = fs::canonical(defaultPath);
 
 	this->loadDefaultCSV();
+
+	this->setContextMenuPolicy(Qt::DefaultContextMenu);
+	//connect(this, &QWidget::customContextMenuRequested, [this](QPoint const& pos) {
+	//	auto menu(new QMenu);
+	//	menu->addAction("action", this, [](){std::cout << "hey";});
+	//});
+	//this->setContextMenuPolicy(Qt::CustomContextMenu);
+	//connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showContextMenu(const QPoint &)));
 }
 
 TimesList::~TimesList() {}
@@ -68,7 +84,7 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 		this->insertRow(0);
 		auto newItem(new QTableWidgetItem(toAdd.toQString()));
 		this->setItem(0,0,newItem);
-		newItem->setFlags(Qt::ItemIsEnabled);
+		newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 		// On calcule les mo3, ao5 et ao12
 		if (oldRowCountCSV >= 2) {
 			long long mo3(0);
@@ -76,12 +92,12 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 				mo3 += resource.GetCell<long long>("time", i);
 			}
 			mo3 /= 3;
-			resource.SetCell<long long>(1, oldRowCountCSV, mo3);
+			resource.SetCell<long long>(resource.GetColumnIdx("mo3"), oldRowCountCSV, mo3);
 			newItem = new QTableWidgetItem(Duration<long long>(mo3).toQString());
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		newItem->setFlags(Qt::ItemIsEnabled);
+		newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 		this->setItem(0, 1, newItem);
 
 		if (oldRowCountCSV >= 4) {
@@ -100,12 +116,12 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 			ao5 -= min;
 			ao5 -= max;
 			ao5 /= 3;
-			resource.SetCell<long long>(2,oldRowCountCSV, ao5);
+			resource.SetCell<long long>(resource.GetColumnIdx("ao5"),oldRowCountCSV, ao5);
 			newItem = new QTableWidgetItem(Duration<long long>(ao5).toQString());
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		newItem->setFlags(Qt::ItemIsEnabled);
+		newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 		this->setItem(0, 2, newItem);
 
 		if (oldRowCountCSV >= 11) {
@@ -124,12 +140,12 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 			ao12 -= min;
 			ao12 -= max;
 			ao12 /= 10;
-			resource.SetCell<long long>(3, oldRowCountCSV, ao12);
+			resource.SetCell<long long>(resource.GetColumnIdx("ao12"), oldRowCountCSV, ao12);
 			newItem = new QTableWidgetItem(Duration<long long>(ao12).toQString());
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
-		newItem->setFlags(Qt::ItemIsEnabled);
+		newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 		this->setItem(0, 3, newItem);
 
 		this->setVerticalHeaderItem(0,new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
@@ -171,7 +187,6 @@ bool isStartOf(std::vector<std::string> const& lhs, std::vector<std::string> con
 
 bool TimesList::hasRightFormat(const std::string& pathToCSV) {
 	csv::Document toVerify(pathToCSV);
-	// TODO : try to delete toVerify.GetColumnCount() != 6
 	if (!isStartOf(toVerify.GetColumnNames(),{"time","mo3","ao5","ao12","scramble","timeStamp","comment"})) {
 		return false;
 	}
@@ -240,6 +255,106 @@ void TimesList::saveToDefaultCSV() {
 
 void TimesList::saveToCustomCSV(const std::string& pathToCSV) {
 	resource.Save(pathToCSV);
+}
+
+void TimesList::print(int row, int col) {
+	std::cout << row << "," << col << std::endl;
+}
+
+void TimesList::showContextMenu(QPoint const&) {
+	std::cout << "show context menu" << std::endl;
+	QMenu menu("menu", this);
+	QAction action("save", this);
+	connect(&action, &QAction::triggered, this, &TimesList::saveToCurrentCSV);
+	menu.addAction(&action);
+	menu.exec();
+}
+
+void TimesList::contextMenuEvent(QContextMenuEvent* event) {
+	QAbstractScrollArea::contextMenuEvent(event);
+	QMenu menu;
+	QModelIndexList list(this->selectedIndexes());
+	QSet<int> rows;
+	for (auto const & index : list) {
+	    rows.insert(index.row());
+	}
+	if (rows.size() == 1) {
+		int row(list.front().row());
+		this->setRangeSelected(QTableWidgetSelectionRange(row,0,row,3), true);
+		menu.addAction("More Info", [this, row](){this->moreInfo(row);}, QKeySequence(Qt::Key_I));
+		menu.addAction("Modify Comment", [this, row](){this->modifyComment(row);}, QKeySequence(Qt::Key_M));
+		menu.addAction("Copy Scramble", [this, row](){ this->copyScramble(row);});
+		//menu.addAction("Delete time", [this, row](){this->deleteTime(row);});
+	} else {
+		std::cerr << "pas bien" << std::endl;
+		menu.addAction("Error, several rows selected");
+	}
+	menu.exec(event->globalPos());
+	this->setRangeSelected(QTableWidgetSelectionRange(0,0,this->rowCount(),this->columnCount()), false);
+
+}
+
+void TimesList::modifyComment(int row) {
+	size_t N(resource.GetRowCount());
+	QString input(QInputDialog::getText(this,
+									 "Modify Comment",
+									 "Enter comments",
+									 QLineEdit::Normal,
+									 QString::fromStdString(resource.GetCell<std::string>("comment",N-1-row))));
+	if (!input.isNull()) {
+		resource.SetCell(resource.GetColumnIdx("comment"), N-1-row, input.toStdString());
+		resource.Save();
+	}
+}
+void TimesList::moreInfo(int row) {
+	size_t N(resource.GetRowCount());
+	QString message("Time : ");
+	message += QString::fromStdString(resource.GetCell<std::string>("time", N-1-row));
+	message += "\n mo3 : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("mo3", N-1-row));
+	message += "\n ao5 : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("ao5", N-1-row));
+	message += "\n ao12 : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("ao12", N-1-row));
+	message += "\n Scramble : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("scramble", N-1-row));
+	message += "\n Time Stamp : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("timeStamp", N-1-row));
+	message += "\n Comment : ";
+	message += QString::fromStdString(resource.GetCell<std::string>("comment", N-1-row));
+	QMessageBox::information(this, QString("Information on Time")+QString::fromStdString(std::to_string(N-row)), message);
+}
+
+void TimesList::deleteTime(int row) {
+	//size_t oldRowCount(resource.GetRowCount());
+	//size_t oldRank(oldRowCount-1-row);
+	//resource.RemoveRow(oldRank);
+	//for (size_t i(oldRank); i < (oldRank+1 > oldRowCount-2 ? oldRowCount-2 : oldRank+1); ++i) {
+	//	long long mo3(0);
+	//	for (size_t j(i-2); j <= oldRowCount; ++j) {
+	//		mo3 += resource.GetCell<long long>("time", j);
+	//	}
+	//	mo3 /= 3;
+	//	resource.SetCell<long long>(1, oldRowCount, mo3);
+	//	//newItem = new QTableWidgetItem(Duration<long long>(mo3).toQString());
+	//}
+	//for (size_t i(oldRank); i < (oldRank+3 > oldRowCount-2 ? oldRowCount-2 : oldRank+3); ++i) {
+	//
+	//}
+	/*
+	 * oldRank = 1
+	 * oldRowCount = 3
+	 *
+	 * 0
+	 * 1
+	 * 2
+	 * */
+	//	 On doit recalculer les mo3, ao5 et ao12 qui dépendaient de ce truc :
+	std::cout << "delete time" << std::endl;
+}
+
+void TimesList::copyScramble(int row) {
+	QGuiApplication::clipboard()->setText(QString::fromStdString(resource.GetCell<std::string>("scramble", resource.GetRowCount()-1-row)));
 }
 
 #pragma clang diagnostic pop
