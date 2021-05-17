@@ -106,54 +106,59 @@ Scramble::Scramble() {
 	this->regenerate();
 }
 Scramble::Scramble(std::string_view str) {
-	size_t pos(0), i(0);
-	std::string move;
-	while (pos != std::string::npos && i < 20) {
-		pos = str.find(' ');
-		move = str.substr(0, pos);
-		if (move == "R") {
-			moves[i] = R;
-		} else if (move == "R2") {
-			moves[i] = R2;
-		} else if (move == "R'") {
-			moves[i] = Rp;
-		} else if (move == "L") {
-			moves[i] = L;
-		} else if (move == "L2") {
-			moves[i] = L2;
-		} else if (move == "L'") {
-			moves[i] = Lp;
-		} else if (move == "F") {
-			moves[i] = F;
-		} else if (move == "F2") {
-			moves[i] = F2;
-		} else if (move == "F'") {
-			moves[i] = Fp;
-		} else if (move == "D") {
-			moves[i] = D;
-		} else if (move == "D2") {
-			moves[i] = D2;
-		} else if (move == "D'") {
-			moves[i] = Dp;
-		} else if (move == "B") {
-			moves[i] = B;
-		} else if (move == "B2") {
-			moves[i] = B2;
-		} else if (move == "B'") {
-			moves[i] = Bp;
-		} else if (move == "U") {
-			moves[i] = U;
-		} else if (move == "U2") {
-			moves[i] = U2;
-		} else if (move == "U'") {
-			moves[i] = Up;
-		} else {
-			#ifdef DEBUG_MODE
-			std::cerr << "pas bien" << std::endl;
-			#endif
+	if (str.empty()) {
+		std::cerr << "The scramble is empty!" << std::endl;
+		throw Scramble::Error(emptyInputString);
+	} else {
+		size_t pos(0), i(0);
+		std::string move;
+		while (pos != std::string::npos && i < 20) {
+			pos = str.find(' ');
+			move = str.substr(0, pos);
+			if (move == "R") {
+				moves[i] = R;
+			} else if (move == "R2") {
+				moves[i] = R2;
+			} else if (move == "R'") {
+				moves[i] = Rp;
+			} else if (move == "L") {
+				moves[i] = L;
+			} else if (move == "L2") {
+				moves[i] = L2;
+			} else if (move == "L'") {
+				moves[i] = Lp;
+			} else if (move == "F") {
+				moves[i] = F;
+			} else if (move == "F2") {
+				moves[i] = F2;
+			} else if (move == "F'") {
+				moves[i] = Fp;
+			} else if (move == "D") {
+				moves[i] = D;
+			} else if (move == "D2") {
+				moves[i] = D2;
+			} else if (move == "D'") {
+				moves[i] = Dp;
+			} else if (move == "B") {
+				moves[i] = B;
+			} else if (move == "B2") {
+				moves[i] = B2;
+			} else if (move == "B'") {
+				moves[i] = Bp;
+			} else if (move == "U") {
+				moves[i] = U;
+			} else if (move == "U2") {
+				moves[i] = U2;
+			} else if (move == "U'") {
+				moves[i] = Up;
+			} else {
+				#ifdef DEBUG_MODE
+				std::cerr << "pas bien" << std::endl;
+				#endif
+			}
+			++i;
+			str.remove_prefix(pos+1);
 		}
-		++i;
-		str.remove_prefix(pos+1);
 	}
 }
 

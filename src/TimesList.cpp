@@ -476,7 +476,14 @@ void TimesList::deleteTime(int row) {
 	this->readCurrentCSV();
 }
 void TimesList::tryScrambleAgain(int row) {
-	emit sendScramble(Scramble(resource.GetCell<std::string>("scramble",resource.GetRowCount()-1-row)));
+	Scramble s;
+	try {
+		s = Scramble(resource.GetCell<std::string>("scramble",resource.GetRowCount()-1-row));
+	} catch (Scramble::Error const&) {
+		s.regenerate();
+		QMessageBox::warning(this, "", "This time did not have a scramble saved. Another one was generated.");
+	}
+	emit sendScramble(s);
 }
 void TimesList::copyScramble(int row) {
 	QGuiApplication::clipboard()->setText(QString::fromStdString(resource.GetCell<std::string>("scramble", resource.GetRowCount()-1-row)));

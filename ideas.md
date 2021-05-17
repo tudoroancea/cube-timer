@@ -5,12 +5,12 @@
   Label on the left
 
 [x] Add new metadata (time stamp, scramble)
-[ ]=> add preferences for which metada to display
+[ ]=> add preferences for which metadata to display
 
 [x] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a 
 warning dialog to confirm you want to proceed.
 
-[ ] Add commentary metadata. You can modify them by right clicking on one.
+[x] Add commentary metadata. You can modify them by right clicking on one.
 
 [ ] Starting/Stoping timer with click
 
