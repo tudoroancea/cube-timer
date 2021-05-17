@@ -24,6 +24,8 @@
 namespace csv = rapidcsv;
 namespace fs = std::filesystem;
 
+const std::vector<std::string> TimesList::metadataHeaders = {"time", "mo3", "ao5", "ao12", "scramble", "timeStamp", "comment"};
+
 void TimesList::readCurrentCSV() {
 	this->clearContents();
 	size_t N(resource.GetRowCount());
@@ -62,12 +64,6 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	this->loadDefaultCSV();
 
 	this->setContextMenuPolicy(Qt::DefaultContextMenu);
-	//connect(this, &QWidget::customContextMenuRequested, [this](QPoint const& pos) {
-	//	auto menu(new QMenu);
-	//	menu->addAction("action", this, [](){std::cout << "hey";});
-	//});
-	//this->setContextMenuPolicy(Qt::CustomContextMenu);
-	//connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showContextMenu(const QPoint &)));
 }
 
 TimesList::~TimesList() {}
@@ -184,13 +180,102 @@ bool isStartOf(std::vector<std::string> const& lhs, std::vector<std::string> con
 		return true;
 	}
 }
-
+size_t firstDifference(std::vector<std::string> const& lhs, std::vector<std::string> rhs) {
+	size_t res(0);
+	while (lhs[res] == rhs[res]) {
+		++res;
+	}
+	return res;
+}
 bool TimesList::hasRightFormat(const std::string& pathToCSV) {
 	csv::Document toVerify(pathToCSV);
-	if (!isStartOf(toVerify.GetColumnNames(),{"time","mo3","ao5","ao12","scramble","timeStamp","comment"})) {
+	if (!areEqual(toVerify.GetColumnNames(),metadataHeaders)) {
 		return false;
 	}
 	return true;
+}
+
+void TimesList::recomputeStatistics(const std::string& pathToCSV) {
+	csv::Document doc;
+	bool works = true;
+	try {
+		doc.Load(pathToCSV,
+                 csv::LabelParams(0,-1),
+                 csv::SeparatorParams(),
+                 csv::ConverterParams(true, 0.0, 0));
+	} catch (...) {
+		works = false;
+	}
+	if (works) {
+		for (size_t i(0); i < doc.GetRowCount(); ++ i) {
+			if (i >= 2) {
+				long long mo3(0);
+				for (size_t j(i - 2); j <= i; ++j) {
+					mo3 += doc.GetCell<long long>("time", j);
+				}
+				mo3 /= 3;
+				doc.SetCell<long long>(doc.GetColumnIdx("mo3"), i, mo3);
+			} else {
+				doc.SetCell<std::string>(doc.GetColumnIdx("mo3"), i, "");
+			}
+			if (i >= 4) {
+				long long ao5(0);
+				long long min(LLONG_MAX), max(0), readValue(0);
+				for (size_t j(i-4); j <= i; ++j) {
+					readValue = doc.GetCell<long long>("time", j);
+					if (readValue < min) {
+						min = readValue;
+					}
+					if (readValue > max) {
+						max = readValue;
+					}
+					ao5 += readValue;
+				}
+				ao5 -= min;
+				ao5 -= max;
+				ao5 /= 3;
+				doc.SetCell<long long>(doc.GetColumnIdx("ao5"),i, ao5);
+			} else {
+				doc.SetCell<std::string>(doc.GetColumnIdx("ao5"), i, "");
+			}
+			if (i >= 11) {
+				long long ao12(0);
+				long long min(LLONG_MAX), max(0), readValue(0);
+				for (size_t j(i-11); j <= i; ++j) {
+					readValue = doc.GetCell<long long>("time", j);
+					if (readValue < min) {
+						min = readValue;
+					}
+					if (readValue > max) {
+						max = readValue;
+					}
+					ao12 += readValue;
+				}
+				ao12 -= min;
+				ao12 -= max;
+				ao12 /= 10;
+				doc.SetCell<long long>(doc.GetColumnIdx("ao12"), i, ao12);
+			} else {
+				doc.SetCell<std::string>(doc.GetColumnIdx("ao12"), i, "");
+			}
+		}
+		doc.Save();
+	} else {
+		std::cerr << "shyte the document cannot be open" << std::endl;
+	}
+}
+
+void TimesList::completeColumns(const std::string& pathToCSV) {
+	csv::Document toComplete(pathToCSV);
+	if (isStartOf(toComplete.GetColumnNames(), metadataHeaders)) {
+		for (size_t i(firstDifference(toComplete.GetColumnNames(),metadataHeaders)); i < metadataHeaders.size(); ++i) {
+			toComplete.InsertColumn(toComplete.GetColumnCount(), std::vector<std::string>(toComplete.GetRowCount(),""));
+			toComplete.SetColumnName(toComplete.GetColumnCount()-1, metadataHeaders[i]);
+		}
+		toComplete.Save();
+	} else {
+		std::cerr << "Ne commence pas pareil" << std::endl;
+	}
 }
 
 void TimesList::loadDefaultCSV() {
@@ -261,15 +346,6 @@ void TimesList::print(int row, int col) {
 	std::cout << row << "," << col << std::endl;
 }
 
-void TimesList::showContextMenu(QPoint const&) {
-	std::cout << "show context menu" << std::endl;
-	QMenu menu("menu", this);
-	QAction action("save", this);
-	connect(&action, &QAction::triggered, this, &TimesList::saveToCurrentCSV);
-	menu.addAction(&action);
-	menu.exec();
-}
-
 void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 	QAbstractScrollArea::contextMenuEvent(event);
 	QMenu menu;
@@ -284,7 +360,21 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 		menu.addAction("More Info", [this, row](){this->moreInfo(row);}, QKeySequence(Qt::Key_I));
 		menu.addAction("Modify Comment", [this, row](){this->modifyComment(row);}, QKeySequence(Qt::Key_M));
 		menu.addAction("Copy Scramble", [this, row](){ this->copyScramble(row);});
-		//menu.addAction("Delete time", [this, row](){this->deleteTime(row);});
+		menu.addAction("Try Scramble again", [this, row](){this->tryScrambleAgain(row);});
+		menu.addAction("Delete time", [this, row](){
+			auto result(QMessageBox::warning(this, "",
+									"Are you sure you want to delete this time? This operation is irreversible.",
+									QMessageBox::Cancel|QMessageBox::Yes,
+#ifdef DEBUG_MODE
+									QMessageBox::Yes
+#else
+									QMessageBox::Cancel
+#endif
+									));
+			if (result == QMessageBox::Yes) {
+				this->deleteTime(row);
+			}
+		});
 	} else {
 		std::cerr << "pas bien" << std::endl;
 		menu.addAction("Error, several rows selected");
@@ -326,33 +416,68 @@ void TimesList::moreInfo(int row) {
 }
 
 void TimesList::deleteTime(int row) {
-	//size_t oldRowCount(resource.GetRowCount());
-	//size_t oldRank(oldRowCount-1-row);
-	//resource.RemoveRow(oldRank);
-	//for (size_t i(oldRank); i < (oldRank+1 > oldRowCount-2 ? oldRowCount-2 : oldRank+1); ++i) {
-	//	long long mo3(0);
-	//	for (size_t j(i-2); j <= oldRowCount; ++j) {
-	//		mo3 += resource.GetCell<long long>("time", j);
-	//	}
-	//	mo3 /= 3;
-	//	resource.SetCell<long long>(1, oldRowCount, mo3);
-	//	//newItem = new QTableWidgetItem(Duration<long long>(mo3).toQString());
-	//}
-	//for (size_t i(oldRank); i < (oldRank+3 > oldRowCount-2 ? oldRowCount-2 : oldRank+3); ++i) {
-	//
-	//}
-	/*
-	 * oldRank = 1
-	 * oldRowCount = 3
-	 *
-	 * 0
-	 * 1
-	 * 2
-	 * */
-	//	 On doit recalculer les mo3, ao5 et ao12 qui dépendaient de ce truc :
-	std::cout << "delete time" << std::endl;
+	size_t oldRowCount(resource.GetRowCount());
+	size_t oldRank(oldRowCount-1-row);
+	resource.RemoveRow(oldRank);
+	this->removeRow(row);
+	for (size_t i(0); i < resource.GetRowCount(); ++ i) {
+		if (i >= 2) {
+			long long mo3(0);
+			for (size_t j(i - 2); j <= i; ++j) {
+				mo3 += resource.GetCell<long long>("time", j);
+			}
+			mo3 /= 3;
+			resource.SetCell<long long>(resource.GetColumnIdx("mo3"), i, mo3);
+		} else {
+			resource.SetCell<std::string>(resource.GetColumnIdx("mo3"), i, "");
+		}
+		if (i >= 4) {
+			long long ao5(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t j(i-4); j <= i; ++j) {
+				readValue = resource.GetCell<long long>("time", j);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao5 += readValue;
+			}
+			ao5 -= min;
+			ao5 -= max;
+			ao5 /= 3;
+			resource.SetCell<long long>(resource.GetColumnIdx("ao5"),i, ao5);
+		} else {
+			resource.SetCell<std::string>(resource.GetColumnIdx("ao5"), i, "");
+		}
+		if (i >= 11) {
+			long long ao12(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t j(i-11); j <= i; ++j) {
+				readValue = resource.GetCell<long long>("time", j);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao12 += readValue;
+			}
+			ao12 -= min;
+			ao12 -= max;
+			ao12 /= 10;
+			resource.SetCell<long long>(resource.GetColumnIdx("ao12"), i, ao12);
+		}else {
+			resource.SetCell<std::string>(resource.GetColumnIdx("ao12"), i, "");
+		}
+	}
+	resource.Save();
+	this->readCurrentCSV();
 }
-
+void TimesList::tryScrambleAgain(int row) {
+	emit sendScramble(Scramble(resource.GetCell<std::string>("scramble",resource.GetRowCount()-1-row)));
+}
 void TimesList::copyScramble(int row) {
 	QGuiApplication::clipboard()->setText(QString::fromStdString(resource.GetCell<std::string>("scramble", resource.GetRowCount()-1-row)));
 }

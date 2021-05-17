@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <random>
+#include <string_view>
 #include <QString>
 
 std::string toString(const Moves& move) {
@@ -104,6 +105,57 @@ bool indepdent(Moves const& lhs, Moves const& rhs) {
 Scramble::Scramble() {
 	this->regenerate();
 }
+Scramble::Scramble(std::string_view str) {
+	size_t pos(0), i(0);
+	std::string move;
+	while (pos != std::string::npos && i < 20) {
+		pos = str.find(' ');
+		move = str.substr(0, pos);
+		if (move == "R") {
+			moves[i] = R;
+		} else if (move == "R2") {
+			moves[i] = R2;
+		} else if (move == "R'") {
+			moves[i] = Rp;
+		} else if (move == "L") {
+			moves[i] = L;
+		} else if (move == "L2") {
+			moves[i] = L2;
+		} else if (move == "L'") {
+			moves[i] = Lp;
+		} else if (move == "F") {
+			moves[i] = F;
+		} else if (move == "F2") {
+			moves[i] = F2;
+		} else if (move == "F'") {
+			moves[i] = Fp;
+		} else if (move == "D") {
+			moves[i] = D;
+		} else if (move == "D2") {
+			moves[i] = D2;
+		} else if (move == "D'") {
+			moves[i] = Dp;
+		} else if (move == "B") {
+			moves[i] = B;
+		} else if (move == "B2") {
+			moves[i] = B2;
+		} else if (move == "B'") {
+			moves[i] = Bp;
+		} else if (move == "U") {
+			moves[i] = U;
+		} else if (move == "U2") {
+			moves[i] = U2;
+		} else if (move == "U'") {
+			moves[i] = Up;
+		} else {
+			#ifdef DEBUG_MODE
+			std::cerr << "pas bien" << std::endl;
+			#endif
+		}
+		++i;
+		str.remove_prefix(pos+1);
+	}
+}
 
 void Scramble::regenerate() {
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
@@ -156,4 +208,13 @@ std::string Scramble::stringScramble() {
 
 QString Scramble::qstringScramble() {
 	return QString::fromStdString(Scramble::stringScramble());
+}
+
+bool Scramble::operator==(Scramble const& other) {
+	for (size_t i(0); i < 20; ++i) {
+		if (other.moves[i] != this->moves[i]) {
+			return false;
+		}
+	}
+	return true;
 }

@@ -12,6 +12,7 @@
 #include "Scramble.hpp"
 #include "libs/rapidcsv.h"
 #include "Settings.hpp"
+#include "TimesList.hpp"
 
 #include <iostream>
 #include <QTimer>
@@ -27,10 +28,10 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
-	csv::Document doc("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv", csv::LabelParams(-1,-1));
-	std::cout << doc.GetCell<std::string>(0,0);
-	//doc.SetCell<std::string>(0,0,"hey");
-	//doc.Save();
+	//TimesList::recomputeStatistics("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
+	//TimesList::completeColumns("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
+	//TimesList::recomputeStatistics("/Users/tudoroancea/Desktop/save-2021-05-15-13-40.csv");
+	//TimesList::completeColumns("/Users/tudoroancea/Desktop/save-2021-05-15-13-40.csv");
 	return 0;
 }
 #pragma clang diagnostic pop

@@ -45,7 +45,7 @@ private slots:
 	void modifyComment(int row);
 	void moreInfo(int row);
 	void deleteTime(int row);
-	//void redoScramble(int row);
+	void tryScrambleAgain(int row);
 	void copyScramble(int row);
 
 protected:
@@ -66,8 +66,9 @@ public:
 
 	enum Error{wrongPath, wrongFormat};
 	static bool hasRightFormat(std::string const& pathToCSV);
-	//static void recomputeStatistics(std::string const& pathToCSV);
-
+	static void recomputeStatistics(std::string const& pathToCSV);
+	static void completeColumns(std::string const& pathToCSV);
+	static const std::vector<std::string> metadataHeaders;
 
 public slots:
 	/**
@@ -93,8 +94,9 @@ public slots:
 	 */
 	void saveToCustomCSV(const std::string& pathToCSV);
 	void print(int row, int col);
-	void showContextMenu(QPoint const& pos);
 
+public: signals:
+	void sendScramble(Scramble const& toTry);
 };
 
 

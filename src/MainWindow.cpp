@@ -53,6 +53,8 @@ MainWindow::MainWindow(char* const& argv0)
 		QCoreApplication::exit(1);
 		std::exit(1);
 	}
+	connect(timesList, SIGNAL(sendScramble(Scramble const&)), this, SLOT(tryScrambleAgain(Scramble const&)));
+
 	this->setWindowTitle("Cube Timer");
 	this->setMinimumSize(700,500);
 	QList screens(QGuiApplication::screens());
@@ -343,4 +345,11 @@ void MainWindow::openPreferences() {
 
 void MainWindow::about() {
 	QMessageBox::about(this, tr("About Menu"), aboutMessage);
+}
+
+void MainWindow::tryScrambleAgain(Scramble const& toTry) {
+	if (!timer->isActive() && !launchingTimer->isActive() && !startingTimer) {
+		scramble = toTry;
+		scrambleLabel->setText(scramble.toQString());
+	}
 }

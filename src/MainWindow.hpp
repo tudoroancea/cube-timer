@@ -120,6 +120,9 @@ public:
 	~MainWindow() override;
 	void keyPressEvent(QKeyEvent* event) override;
 	void keyReleaseEvent(QKeyEvent* event) override;
+
+public slots:
+	void tryScrambleAgain(Scramble const& toTry);
 };
 
 #endif //CUBE_TIMER_MAINWINDOW_HPP

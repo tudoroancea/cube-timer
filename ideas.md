@@ -4,10 +4,11 @@
   - Saved times
   Label on the left
 
-[ ] Add new metadata (time stamp, scramble)
-=> add preferences for which metada to display
+[x] Add new metadata (time stamp, scramble)
+[ ]=> add preferences for which metada to display
 
-[ ] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a warning dialog to confirm you want to proceed.
+[x] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a 
+warning dialog to confirm you want to proceed.
 
 [ ] Add commentary metadata. You can modify them by right clicking on one.
 

@@ -18,6 +18,7 @@ std::string toString(Moves const&);
 struct Scramble{
 	std::array<Moves,20> moves{};
 	Scramble();
+	explicit Scramble(std::string_view str);
 	void regenerate();
 	Moves& operator[](size_t const&);
 	[[nodiscard]] std::string toString() const;
@@ -25,6 +26,8 @@ struct Scramble{
 
 	static std::string stringScramble();
 	static QString qstringScramble();
+
+	bool operator==(const Scramble& other);
 };
 
 #endif //CUBE_TIMER_SCRAMBLE_HPP
