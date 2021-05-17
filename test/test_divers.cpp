@@ -28,10 +28,9 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
-	//TimesList::recomputeStatistics("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
-	//TimesList::completeColumns("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
-	//TimesList::recomputeStatistics("/Users/tudoroancea/Desktop/save-2021-05-15-13-40.csv");
-	//TimesList::completeColumns("/Users/tudoroancea/Desktop/save-2021-05-15-13-40.csv");
+	csv::Document doc("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
+	doc.SetCell(7,0,9);
+	doc.Save();
 	return 0;
 }
 #pragma clang diagnostic pop

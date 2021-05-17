@@ -249,18 +249,11 @@ void MainWindow::createAboutMessage() {
 	aboutMessage += "Cube-timer Version ";
 	aboutMessage +=  PROJECT_VERSION;
 	aboutMessage += "\nCopyright © 2021 Tudor Oancea.\nLicensed under the MIT Licence (see details at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)\n\n";
-	std::ifstream in(std::string(GLOBAL_PATH)+"/README.md");
-	std::string line;
-	in >> std::ws;
-	std::getline(in, line);
-	for (size_t i(0); i < 4; ++i) {
-		in >> std::ws;
-		std::getline(in, line);
-		aboutMessage += (line+"\n").c_str();
-	}
-	in.close();
-	aboutMessage.remove('*');
-	aboutMessage.remove("```");
+	aboutMessage += "This is a simple GUI project using Qt to create a cube timer suited to my personal needs.\n";
+	aboutMessage += "Concretly this means:\n";
+	aboutMessage += "- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target cube-timer). The main reason for this is that it uses the .app bundle particularities such as the Resource directory to save the preferences and data files. If you find easy to  implement alternatives for other platforms I am open to suggestions and pull-requests.\n";
+	aboutMessage += "- The available features will probably never be ground-breaking compared to other timers out there, and I won't develop features I don't find intend to use (even though they may be very popular in the community).\n";
+	aboutMessage += "For example, I won't implement inspection times for 3x3 blind or scrambles for cubes larger that 3x3. I won't develop neither stackmat nor other physical timers integration, nor smart cubes integration.";
 	aboutMessage += "\n\nThe source code can be found at https://github.com/tudoroancea/cube-timer.git";
 }
 

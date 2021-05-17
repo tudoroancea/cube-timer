@@ -7,9 +7,10 @@
 
 This is a simple GUI project using Qt to create a cube timer suited to my personal needs.
 Concretly this means:
-- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target ```cube-timer```). The main reason for this is that it uses the ```.app``` bundle particularities such as the ```Resource``` directory to save the preferences and data files. If you find easy to  implement alternatives for other platforms I am open to  suggestions ans pull-requests.
-- The available features will probably never be ground-breaking compared to other timers out there, and I won't develop features I don't find particularly useful (even though they may be very popular in the community).\
-For example, I won't implement inspection times for blind or scrambles for cubes larger that 3x3. I won't develop neither stackmat or other physical timers integration, nor smart cubes integration.
+- It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target 
+  ```cube-timer```). The main reason for this is that it uses the ```.app``` bundle particularities such as the ```Resource``` directory to save the preferences and data files. If you find easy to  implement alternatives for other platforms I am open to suggestions and pull-requests.
+- The available features will probably never be ground-breaking compared to other timers out there, and I won't develop features I don't find intend to use (even though they may be very popular in the community).\
+For example, I won't implement inspection times for 3x3 blind or scrambles for cubes larger that 3x3. I won't develop neither stackmat nor other physical timers integration, nor smart cubes integration.
 
 ## Current features :
 - Timing at milliseconds precision. One must keep the space bar pressed for 0.3s before launching the timer (customizable).
