@@ -28,9 +28,7 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
-	csv::Document doc("/Users/tudoroancea/CLionProjects/cube-timer/test/test.csv");
-	doc.SetCell(7,0,9);
-	doc.Save();
+	TimesList::recomputeStatistics("/Users/tudoroancea/Desktop/blabla.csv");
 	return 0;
 }
 #pragma clang diagnostic pop

@@ -31,7 +31,17 @@ void TimesList::readCurrentCSV() {
 	size_t N(resource.GetRowCount());
 	this->setRowCount(N);
 	long long readValue(0);
+	bool anyMetadataMissing = false;
 	for (int i(0); i < N; ++i) {
+		bool lineLacksMetadata = false;
+		try {
+			lineLacksMetadata = (resource.GetCell<std::string>(resource.GetColumnIdx("scramble"), i).empty() || resource.GetCell<std::string>(resource.GetColumnIdx("timeStamp"), i).empty());
+		} catch (...) {
+			std::cerr << "there was a problem" << std::endl;
+		}
+		if (lineLacksMetadata) {
+			anyMetadataMissing = true;
+		}
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
 		for (int j(0); j < 4; ++j) {
 			readValue = resource.GetCell<long long>(j, i);
@@ -41,12 +51,18 @@ void TimesList::readCurrentCSV() {
 			} else {
 				newItem = new QTableWidgetItem(QString());
 			}
+			if (lineLacksMetadata) {
+				newItem->setBackground(QBrush(QColor(240,77,113,100)));
+			}
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 			this->setItem(N-i-1,j,newItem);
 		}
 	}
 	this->resizeColumnsToContents();
 	this->resizeRowsToContents();
+	if (anyMetadataMissing) {
+		throw Error(missingMetadata);
+	}
 }
 
 TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, parent) {
@@ -61,8 +77,27 @@ TimesList::TimesList(char* const& argv0, QWidget* parent) : QTableWidget(0, 4, p
 	defaultPath /= "../../Resources/default-historic.csv";
 	defaultPath = fs::canonical(defaultPath);
 
-	this->loadDefaultCSV();
-
+	try {
+		this->loadDefaultCSV();
+	} catch (TimesList::Error const& err) {
+		switch (err.type()) {
+		    case TimesList::wrongPath: {
+			    QMessageBox::critical(this, "", "The default CSV has not been found. The app cannot start.");
+			    QCoreApplication::exit(1);
+			    std::exit(1);
+			    break;
+		    }
+	        case TimesList::wrongFormat: {
+		        QMessageBox::critical(this, "",
+		                              "The default CSV has been corrupted and has no longer the right format. The app cannot start.");
+		        QCoreApplication::exit(1);
+		        std::exit(1);
+		        break;
+	        }
+		    default:
+		        break;
+		}
+	}
 	this->setContextMenuPolicy(Qt::DefaultContextMenu);
 }
 
@@ -195,77 +230,63 @@ bool TimesList::hasRightFormat(const std::string& pathToCSV) {
 	return true;
 }
 
-void TimesList::recomputeStatistics(const std::string& pathToCSV) {
-	csv::Document doc;
-	bool works = true;
-	try {
-		doc.Load(pathToCSV,
-                 csv::LabelParams(0,-1),
-                 csv::SeparatorParams(),
-                 csv::ConverterParams(true, 0.0, 0));
-	} catch (...) {
-		works = false;
-	}
-	if (works) {
-		for (size_t i(0); i < doc.GetRowCount(); ++ i) {
-			if (i >= 2) {
-				long long mo3(0);
-				for (size_t j(i - 2); j <= i; ++j) {
-					mo3 += doc.GetCell<long long>("time", j);
-				}
-				mo3 /= 3;
-				doc.SetCell<long long>(doc.GetColumnIdx("mo3"), i, mo3);
-			} else {
-				doc.SetCell<std::string>(doc.GetColumnIdx("mo3"), i, "");
+[[maybe_unused]] void TimesList::recomputeStatistics(csv::Document& csvToRecompute) {
+	for (size_t i(0); i < csvToRecompute.GetRowCount(); ++ i) {
+		if (i >= 2) {
+			long long mo3(0);
+			for (size_t j(i - 2); j <= i; ++j) {
+				mo3 += csvToRecompute.GetCell<long long>("time", j);
 			}
-			if (i >= 4) {
-				long long ao5(0);
-				long long min(LLONG_MAX), max(0), readValue(0);
-				for (size_t j(i-4); j <= i; ++j) {
-					readValue = doc.GetCell<long long>("time", j);
-					if (readValue < min) {
-						min = readValue;
-					}
-					if (readValue > max) {
-						max = readValue;
-					}
-					ao5 += readValue;
-				}
-				ao5 -= min;
-				ao5 -= max;
-				ao5 /= 3;
-				doc.SetCell<long long>(doc.GetColumnIdx("ao5"),i, ao5);
-			} else {
-				doc.SetCell<std::string>(doc.GetColumnIdx("ao5"), i, "");
-			}
-			if (i >= 11) {
-				long long ao12(0);
-				long long min(LLONG_MAX), max(0), readValue(0);
-				for (size_t j(i-11); j <= i; ++j) {
-					readValue = doc.GetCell<long long>("time", j);
-					if (readValue < min) {
-						min = readValue;
-					}
-					if (readValue > max) {
-						max = readValue;
-					}
-					ao12 += readValue;
-				}
-				ao12 -= min;
-				ao12 -= max;
-				ao12 /= 10;
-				doc.SetCell<long long>(doc.GetColumnIdx("ao12"), i, ao12);
-			} else {
-				doc.SetCell<std::string>(doc.GetColumnIdx("ao12"), i, "");
-			}
+			mo3 /= 3;
+			csvToRecompute.SetCell<long long>(csvToRecompute.GetColumnIdx("mo3"), i, mo3);
+		} else {
+			csvToRecompute.SetCell<std::string>(csvToRecompute.GetColumnIdx("mo3"), i, "");
 		}
-		doc.Save();
-	} else {
-		std::cerr << "shyte the document cannot be open" << std::endl;
+		if (i >= 4) {
+			long long ao5(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t j(i-4); j <= i; ++j) {
+				readValue = csvToRecompute.GetCell<long long>("time", j);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao5 += readValue;
+			}
+			ao5 -= min;
+			ao5 -= max;
+			ao5 /= 3;
+			csvToRecompute.SetCell<long long>(csvToRecompute.GetColumnIdx("ao5"),i, ao5);
+		} else {
+			csvToRecompute.SetCell<std::string>(csvToRecompute.GetColumnIdx("ao5"), i, "");
+		}
+		if (i >= 11) {
+			long long ao12(0);
+			long long min(LLONG_MAX), max(0), readValue(0);
+			for (size_t j(i-11); j <= i; ++j) {
+				readValue = csvToRecompute.GetCell<long long>("time", j);
+				if (readValue < min) {
+					min = readValue;
+				}
+				if (readValue > max) {
+					max = readValue;
+				}
+				ao12 += readValue;
+			}
+			ao12 -= min;
+			ao12 -= max;
+			ao12 /= 10;
+			csvToRecompute.SetCell<long long>(csvToRecompute.GetColumnIdx("ao12"), i, ao12);
+		} else {
+			csvToRecompute.SetCell<std::string>(csvToRecompute.GetColumnIdx("ao12"), i, "");
+		}
 	}
+	csvToRecompute.Save();
 }
 
-void TimesList::completeColumns(const std::string& pathToCSV) {
+[[maybe_unused]] void TimesList::completeColumns(const std::string& pathToCSV) {
 	csv::Document toComplete(pathToCSV);
 	if (isStartOf(toComplete.GetColumnNames(), metadataHeaders)) {
 		for (size_t i(firstDifference(toComplete.GetColumnNames(),metadataHeaders)); i < metadataHeaders.size(); ++i) {
@@ -291,16 +312,27 @@ void TimesList::loadDefaultCSV() {
 		#ifdef DEBUG_MODE
 		std::cerr << "Default CSV not found." << std::endl; // Error : wrongPath
 		#endif
-		throw wrongPath;
+		throw Error(wrongPath);
 	}
 	if (hasRightFormat(defaultPath.string())) {
 		resource = newResource;
-		this->readCurrentCSV();
+		try { // necessary because we want to show this warning only when we load a CSV file (for the first time), not every time we read one's content (for example when we delete times).
+			this->readCurrentCSV();
+		} catch (Error const& err) {
+			if (err.type() == missingMetadata) {
+				QMessageBox::warning(this, "", "Some times did not have scrambles or time stamps. The corresponding lines are highlighted in red.");
+			} else {
+				#ifdef DEBUG_MODE
+				std::cerr << "Unexpected error raised by TimesList::readCurrentCSV() called in TimesList::loadDefaultCSV()" << std::endl;
+				#endif
+			}
+		}
+
 	} else {
 		#ifdef DEBUG_MODE
 		std::cerr << "Default CVS has been corrupted. The new data has not been loaded." << std::endl; // Error : corruptedDefaultCSV OR wrongFormat
 		#endif
-		throw wrongFormat;
+		throw Error(wrongFormat);
 	}
 }
 
@@ -317,16 +349,26 @@ void TimesList::loadCustomCSV(const std::string& pathToCSV) {
 		#ifdef DEBUG_MODE
 		std::cerr << "Default CSV not found." << std::endl; // Error : wrongPath
 		#endif
-		throw wrongPath;
+		throw Error(wrongPath);
 	}
 	if (hasRightFormat(pathToCSV)) {
 		resource = newResource;
-		this->readCurrentCSV();
+		try { // necessary because we want to show this warning only when we load a CSV file (for the first time), not every time we read one's content (for example when we delete times).
+			this->readCurrentCSV();
+		} catch (Error const& err) {
+			if (err.type() == missingMetadata) {
+				QMessageBox::warning(this, "", "Some times did not have scrambles or time stamps. The corresponding lines are highlighted in red.");
+			} else {
+				#ifdef DEBUG_MODE
+				std::cerr << "Unexpected error raised by TimesList::readCurrentCSV() called in TimesList::loadCustomCSV()" << std::endl;
+				#endif
+			}
+		}
 	} else {
 		#ifdef DEBUG_MODE
 		std::cerr << "Custom CVS does not have the right format (not 4 columns or not the right headers). The new data has not been loaded." << std::endl;
 		#endif
-		throw wrongFormat;
+		throw Error(wrongFormat);
 	}
 }
 
@@ -359,7 +401,9 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 		this->setRangeSelected(QTableWidgetSelectionRange(row,0,row,3), true);
 		menu.addAction("More Info", [this, row](){this->moreInfo(row);}, QKeySequence(Qt::Key_I));
 		menu.addAction("Modify Comment", [this, row](){this->modifyComment(row);}, QKeySequence(Qt::Key_M));
-		menu.addAction("Copy Scramble", [this, row](){ this->copyScramble(row);});
+		menu.addAction("Copy Scramble", [this, row](){
+			QGuiApplication::clipboard()->setText(QString::fromStdString(resource.GetCell<std::string>("scramble", resource.GetRowCount()-1-row)));
+		});
 		menu.addAction("Try Scramble again", [this, row](){this->tryScrambleAgain(row);});
 		menu.addAction("Delete time", [this, row](){
 			auto result(QMessageBox::warning(this, "",
@@ -376,12 +420,36 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 			}
 		});
 	} else {
-		std::cerr << "pas bien" << std::endl;
-		menu.addAction("Error, several rows selected");
+		for (auto const & row : rows) {
+			this->setRangeSelected(QTableWidgetSelectionRange(row,0,row,3), true);
+		}
+		menu.addAction("Copy Scrambles", [this, rows](){
+			QString scrambles;
+			for (auto const & row : rows) {
+				scrambles += QString::fromStdString(resource.GetCell<std::string>("scramble", resource.GetRowCount()-1-row))+"; ";
+			}
+			scrambles.remove(scrambles.size()-3,3);
+			QGuiApplication::clipboard()->setText(scrambles);
+		});
+		menu.addAction("Delete time", [this, rows](){
+			auto result(QMessageBox::warning(this, "",
+			                                 "Are you sure you want to delete this time? This operation is irreversible.",
+			                                 QMessageBox::Cancel|QMessageBox::Yes,
+#ifdef DEBUG_MODE
+                               QMessageBox::Yes
+#else
+											 QMessageBox::Cancel
+#endif
+			));
+			if (result == QMessageBox::Yes) {
+				for (auto const & row : rows) {
+					this->deleteTime(row);
+				}
+			}
+		});
 	}
 	menu.exec(event->globalPos());
 	this->setRangeSelected(QTableWidgetSelectionRange(0,0,this->rowCount(),this->columnCount()), false);
-
 }
 
 void TimesList::modifyComment(int row) {
@@ -420,61 +488,12 @@ void TimesList::deleteTime(int row) {
 	size_t oldRank(oldRowCount-1-row);
 	resource.RemoveRow(oldRank);
 	this->removeRow(row);
-	for (size_t i(0); i < resource.GetRowCount(); ++ i) {
-		if (i >= 2) {
-			long long mo3(0);
-			for (size_t j(i - 2); j <= i; ++j) {
-				mo3 += resource.GetCell<long long>("time", j);
-			}
-			mo3 /= 3;
-			resource.SetCell<long long>(resource.GetColumnIdx("mo3"), i, mo3);
-		} else {
-			resource.SetCell<std::string>(resource.GetColumnIdx("mo3"), i, "");
-		}
-		if (i >= 4) {
-			long long ao5(0);
-			long long min(LLONG_MAX), max(0), readValue(0);
-			for (size_t j(i-4); j <= i; ++j) {
-				readValue = resource.GetCell<long long>("time", j);
-				if (readValue < min) {
-					min = readValue;
-				}
-				if (readValue > max) {
-					max = readValue;
-				}
-				ao5 += readValue;
-			}
-			ao5 -= min;
-			ao5 -= max;
-			ao5 /= 3;
-			resource.SetCell<long long>(resource.GetColumnIdx("ao5"),i, ao5);
-		} else {
-			resource.SetCell<std::string>(resource.GetColumnIdx("ao5"), i, "");
-		}
-		if (i >= 11) {
-			long long ao12(0);
-			long long min(LLONG_MAX), max(0), readValue(0);
-			for (size_t j(i-11); j <= i; ++j) {
-				readValue = resource.GetCell<long long>("time", j);
-				if (readValue < min) {
-					min = readValue;
-				}
-				if (readValue > max) {
-					max = readValue;
-				}
-				ao12 += readValue;
-			}
-			ao12 -= min;
-			ao12 -= max;
-			ao12 /= 10;
-			resource.SetCell<long long>(resource.GetColumnIdx("ao12"), i, ao12);
-		}else {
-			resource.SetCell<std::string>(resource.GetColumnIdx("ao12"), i, "");
-		}
-	}
-	resource.Save();
-	this->readCurrentCSV();
+	TimesList::recomputeStatistics(resource);
+	try {
+		this->readCurrentCSV();
+	} catch (...) {}
 }
+
 void TimesList::tryScrambleAgain(int row) {
 	Scramble s;
 	try {

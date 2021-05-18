@@ -44,7 +44,7 @@ MainWindow::MainWindow(char* const& argv0)
 	}
 	try {
 		timesList = new TimesList(argv0, this);
-	} catch (TimesList::Error const& err) {
+	} catch (TimesList::ErrorType const& err) {
 		if (err == TimesList::wrongPath) {
 			QMessageBox::critical(this, "", "The default CSV has not been found. The app cannot start.");
 		} else {
@@ -277,13 +277,31 @@ void MainWindow::loadDefaultCSV() {
 		switch (reply) {
 			case QMessageBox::Ok: {
 				timesList->saveToCurrentCSV();
-				timesList->loadDefaultCSV();
+				try {
+					timesList->loadDefaultCSV();
+				} catch (TimesList::ErrorType const& err) {
+					switch (err) {
+						case TimesList::wrongPath: {
+							QMessageBox::critical(this, "", "The default CSV has not been found. The app crashed.");
+							QCoreApplication::exit(1);
+							std::exit(1);
+						}
+						case TimesList::wrongFormat: {
+							QMessageBox::critical(this, "",
+							                      "The default CSV has been corrupted and has no longer the right format. The app crashed.");
+							QCoreApplication::exit(1);
+							std::exit(1);
+						}
+						default:
+							break;
+					}
+				}
 				break;
 			}
 			case QMessageBox::No:
 				timesList->loadDefaultCSV();
 				break;
-			default:
+			default: // happens if one choose Cancel instead of Yes or No
 				break;
 		}
 	} else {
@@ -312,7 +330,7 @@ void MainWindow::loadCustomCSV() {
 		if (!path.isEmpty()) {
 			try {
 				timesList->loadCustomCSV(path.toStdString());
-			} catch (TimesList::Error const& err) {
+			} catch (TimesList::ErrorType const& err) {
 				QString message;
 				switch (err) {
 					case TimesList::wrongPath: {

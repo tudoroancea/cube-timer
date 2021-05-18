@@ -48,6 +48,7 @@ private slots:
 	void tryScrambleAgain(int row);
 	void copyScramble(int row);
 
+
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 
@@ -64,19 +65,34 @@ public:
 	 */
 	[[nodiscard]] bool isCurrentCSVDefault() const;
 
-	enum Error{wrongPath, wrongFormat};
+	enum ErrorType{wrongPath, wrongFormat, missingMetadata};
+	struct Error : public std::exception {
+		ErrorType type_;
+		explicit Error(ErrorType const& t) : type_(t) {}
+		[[nodiscard]] ErrorType const& type() const {return type_;}
+		[[nodiscard]] const char* what() const noexcept override {
+			switch (type_) {
+				case wrongPath: return "Wrong Path";
+				case wrongFormat: return "Wrong Format";
+				case missingMetadata: return "Missing Metadata";
+				default: return "Settings::Error";
+			}
+		}
+	};
 	static bool hasRightFormat(std::string const& pathToCSV);
-	static void recomputeStatistics(std::string const& pathToCSV);
-	static void completeColumns(std::string const& pathToCSV);
+	[[maybe_unused]] static void recomputeStatistics(csv::Document& csvToRecompute);
+	[[maybe_unused]] static void completeColumns(std::string const& pathToCSV);
 	static const std::vector<std::string> metadataHeaders;
 
 public slots:
 	/**
 	 * @brief Load data from default CSV. WARNING: does not saveToCurrentCSV previously loaded data
+	 * Can throw wrongPath or wrongFormat
 	 */
 	void loadDefaultCSV();
 	/**
 	 * @brief Load data from custom CSV. WARNING: does not saveToCurrentCSV previously loaded data
+	 * Can throw wrongPath or wrongFormat
 	 * @param pathToCSV
 	 */
 	void loadCustomCSV(const std::string& pathToCSV);

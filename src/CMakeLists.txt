@@ -43,6 +43,9 @@ if (APPLE)
 						  MACOSX_BUNDLE_GUI_IDENTIFIER "com.tudor.oancea.${PROJECT_NAME}"
 						  MACOSX_BUNDLE_ICON_FILE "icon.icns"
 						  RESOURCE "${RESOURCES_FILES}")
+	if (CMAKE_BUILD_TYPE MATCHES "Debug")
+		set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_NAME "${PROJECT_NAME}-debug")
+	endif()
 
 	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND plutil -replace NSHighResolutionCapable -bool true ${PROJECT_NAME}.app/Contents/Info.plist)
 else()

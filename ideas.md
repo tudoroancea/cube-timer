@@ -7,14 +7,16 @@
 [x] Add new metadata (time stamp, scramble)
 [ ]=> add preferences for which metadata to display
 
-[x] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a 
+[x] Delete times by selecting a line or more in the TimesList and right-clicking on one of them.There will be a
 warning dialog to confirm you want to proceed.
 
 [x] Add commentary metadata. You can modify them by right clicking on one.
 
-[ ] Starting/Stoping timer with click
+[x] change colors on the lines of the times with missing metadata (no scramble or no timestamp).
 
-[ ] Add scramble historic (last 10 scrambles) which allows to redo the last time. OR, add an option 
+[ ] Several autoSave options : on app closing, or even at each new time/action.
+
+[ ] Starting/Stoping timer with click
 
 ## Miscalleneous ideas:
 We can insert new columns in the CSV files each time we pass a new bound (5, 12, 25, 50, 100, 200, 500, 1000…).\
