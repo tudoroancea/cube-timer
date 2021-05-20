@@ -76,6 +76,12 @@ MainWindow::MainWindow(char* const& argv0)
 	rhs->addWidget(scrambleLabel, 2, Qt::AlignCenter);
 	rhs->addWidget(timeLabel, 8, Qt::AlignCenter);
 
+	//auto* lhs(new QVBoxLayout);
+	//lhs->addWidget(new QTableWidgetItem);
+	//lhs->addWidget(timesList, 0);
+	//
+	//mainLayout->addLayout(lhs,0);
+
 	mainLayout->addWidget(timesList, 0);
 	mainLayout->addLayout(rhs, 1);
 

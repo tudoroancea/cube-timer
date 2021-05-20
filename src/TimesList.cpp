@@ -8,6 +8,7 @@
 
 #include "TimesList.hpp"
 #include "libs/rapidcsv.h"
+#include "Duration.hpp"
 
 #include <QTableWidget>
 #include <QHeaderView>
@@ -27,11 +28,12 @@ namespace fs = std::filesystem;
 const std::vector<std::string> TimesList::metadataHeaders = {"time", "mo3", "ao5", "ao12", "scramble", "timeStamp", "comment"};
 
 void TimesList::readCurrentCSV() {
+	pbs.fill(Duration<long long>());
 	this->clearContents();
 	size_t N(resource.GetRowCount());
 	this->setRowCount(N);
-	long long readValue(0);
 	bool anyMetadataMissing = false;
+	Duration<long long> readTime, readMO3, readAO5, readAO12;
 	for (int i(0); i < N; ++i) {
 		bool lineLacksMetadata = false;
 		try {
@@ -43,11 +45,11 @@ void TimesList::readCurrentCSV() {
 			anyMetadataMissing = true;
 		}
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
-		for (int j(0); j < 4; ++j) {
-			readValue = resource.GetCell<long long>(j, i);
+
+		auto createItem = [lineLacksMetadata](Duration<long long> time)->QTableWidgetItem* {
 			QTableWidgetItem* newItem;
-			if (readValue > 0) {
-				newItem = new QTableWidgetItem(Duration<long long>(readValue).toQString());
+			if (time > 0) {
+				newItem = new QTableWidgetItem(time.toQString());
 			} else {
 				newItem = new QTableWidgetItem(QString());
 			}
@@ -55,11 +57,33 @@ void TimesList::readCurrentCSV() {
 				newItem->setBackground(QBrush(QColor(240,77,113,100)));
 			}
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
-			this->setItem(N-i-1,j,newItem);
+			return newItem;
+		};
+
+		readTime = resource.GetCell<long long>("time",i);
+		this->setItem(N-i-1,0,createItem(readTime));
+		if (readTime < pbs[0]) {
+			pbs[0] = readTime;
+		}
+		readMO3 = resource.GetCell<long long>("mo3",i);
+		this->setItem(N-i-1,1,createItem(readMO3));
+		if (readMO3 < pbs[1]) {
+			pbs[1] = readMO3;
+		}
+		readAO5 = resource.GetCell<long long>("ao5",i);
+		this->setItem(N-i-1,2,createItem(readAO5));
+		if (readAO5 < pbs[2]) {
+			pbs[2] = readAO5;
+		}
+		readAO12 = resource.GetCell<long long>("ao12",i);
+		this->setItem(N-i-1,3,createItem(readAO12));
+		if (readAO12 < pbs[3]) {
+			pbs[3] = readAO12;
 		}
 	}
 	this->resizeColumnsToContents();
 	this->resizeRowsToContents();
+	emit sendPBs(pbs[0], pbs[1], pbs[2], pbs[3]);
 	if (anyMetadataMissing) {
 		throw Error(missingMetadata);
 	}
@@ -111,7 +135,9 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 		resource.SetCell<std::string>(resource.GetColumnIdx("scramble"), oldRowCountCSV, scramble.toString());
 		resource.SetCell<std::string>(resource.GetColumnIdx("timeStamp"), oldRowCountCSV, timeStamp.toString("yyyy-MM-dd-hh:mm:ss.zzz").toStdString());
 		resource.SetCell<std::string>(resource.GetColumnIdx("comment"), oldRowCountCSV, comment.toStdString());
-
+		if (toAdd < pbs[0]) {
+			pbs[0] = toAdd;
+		}
 		this->insertRow(0);
 		auto newItem(new QTableWidgetItem(toAdd.toQString()));
 		this->setItem(0,0,newItem);
@@ -125,6 +151,9 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 			mo3 /= 3;
 			resource.SetCell<long long>(resource.GetColumnIdx("mo3"), oldRowCountCSV, mo3);
 			newItem = new QTableWidgetItem(Duration<long long>(mo3).toQString());
+			if (mo3 < pbs[1]) {
+				pbs[1] = mo3;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
@@ -149,6 +178,9 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 			ao5 /= 3;
 			resource.SetCell<long long>(resource.GetColumnIdx("ao5"),oldRowCountCSV, ao5);
 			newItem = new QTableWidgetItem(Duration<long long>(ao5).toQString());
+			if (ao5 < pbs[2]) {
+				pbs[2] = ao5;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}
@@ -173,6 +205,9 @@ void TimesList::addTime(Duration<long long int> const& toAdd, Scramble const& sc
 			ao12 /= 10;
 			resource.SetCell<long long>(resource.GetColumnIdx("ao12"), oldRowCountCSV, ao12);
 			newItem = new QTableWidgetItem(Duration<long long>(ao12).toQString());
+			if (ao12 < pbs[3]) {
+				pbs[3] = ao12;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 		}

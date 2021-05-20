@@ -9,7 +9,7 @@
 
 #include <QString>
 
-template<typename T>
+template<typename T = long long>
 class Duration {
 private:
 	T hours;
@@ -17,8 +17,8 @@ private:
 	T seconds;
 	T milliseconds;
 public:
-	[[maybe_unused]] Duration(T h, T min, T s, T mil) : hours(h), minutes(min), seconds(s), milliseconds(mil) {}
-	Duration(T mil) {
+	[[maybe_unused]] Duration(T h, T min, T s, T mil) : hours((h>=0 ? h : 0)), minutes((min>=0 ? min : 0)), seconds((s>=0 ? s : 0)), milliseconds((mil>=0 ? mil : 0)) {}
+	Duration(T mil = 0) {
 		if (mil <= 0) {
 			hours = 0;
 			minutes = 0;
@@ -96,6 +96,15 @@ public:
 
 	operator T() const  {
 		return milliseconds+1000*seconds+60000*minutes+3600000*hours;
+	}
+
+	bool operator<(Duration<T> const& other) {
+		//return (hours < other.hours || minutes < other.minutes || seconds < other.seconds || milliseconds < other.milliseconds);
+		return this->toT() < other.toT();
+	}
+	bool operator<=(Duration<T> const& other) {
+		//return (hours <= other.hours || minutes <= other.minutes || seconds <= other.seconds || milliseconds <= other.milliseconds);
+		return this->toT() <= other.toT();
 	}
 
 	//	Getters ==============

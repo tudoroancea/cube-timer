@@ -38,6 +38,15 @@ private:
 	 * @brief Deletes all the content of the QTableWidget and populates it with the current CSV file.
 	 */
 	void readCurrentCSV();
+	/**
+	 * @brief PBs
+	 */
+	 std::array<Duration<long long>,4> pbs;
+	/**
+	 * @brief PBs for the best time, mo3, ao5 and ao12.
+	 */
+	 std::array<std::pair<Duration<long long>,size_t>,4> pbs2;
+
 
 
 private slots:
@@ -113,6 +122,7 @@ public slots:
 
 public: signals:
 	void sendScramble(Scramble const& toTry);
+	void sendPBs(Duration<long long> pb, Duration<long long> pbMO3, Duration<long long> pbAO5, Duration<long long> pbAO12);
 };
 
 
