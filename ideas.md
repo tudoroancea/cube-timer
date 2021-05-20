@@ -14,9 +14,19 @@ warning dialog to confirm you want to proceed.
 
 [x] change colors on the lines of the times with missing metadata (no scramble or no timestamp).
 
+[ ] Add PB stats (best time, mo3, ao5, ao12)
+
+[ ] let users see the times included in a certain mo3, ao5 or ao12.
+
+[ ] Use qrc instead of the macOS bundle Resources
+
 [ ] Several autoSave options : on app closing, or even at each new time/action.
 
 [ ] Starting/Stoping timer with click
+
+[ ] replace Duration by QTime that already has the necessary methods.\
+[ ] replace fs::path by QDir/QFile which already have the necessary methods.
+
 
 ## Miscalleneous ideas:
 We can insert new columns in the CSV files each time we pass a new bound (5, 12, 25, 50, 100, 200, 500, 1000…).\
