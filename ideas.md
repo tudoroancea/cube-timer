@@ -14,19 +14,24 @@ warning dialog to confirm you want to proceed.
 
 [x] change colors on the lines of the times with missing metadata (no scramble or no timestamp).
 
-[ ] Add PB stats (best time, mo3, ao5, ao12)
-
-[ ] let users see the times included in a certain mo3, ao5 or ao12.
-
-[ ] Use qrc instead of the macOS bundle Resources
+[ ] Add PB stats (best time, mo3, ao5, ao12)\
+AND\
+[ ] let users see the times included in a certain mo3, ao5 or ao12 => create a class Time that is a subclass of 
+QtableWidgetItem and also contains information about its row in the TimesList table and in the csv::Document.
 
 [ ] Several autoSave options : on app closing, or even at each new time/action.
 
 [ ] Starting/Stoping timer with click
 
-[ ] replace Duration by QTime that already has the necessary methods.\
-[ ] replace fs::path by QDir/QFile which already have the necessary methods.
+### Better use of Qt classes and portability
+[ ] replace Duration by QTime that already has the necessary methods.
 
+[ ] replace fs::path by QDir/QFile which already have the necessary methods. This would help to port the app to 
+windows as it won't use filesystem anymore (which currently is not fully supported by mingw).
+
+[ ] Use qrc instead of the macOS bundle Resources. UPDATE : to do so, we would have to modify rapidcsv.h to use
+QFile, QTextStream and QStrings. Although it would be a great exercise to understand how to really handle text files,
+it would be very time consuming and not necessarily worth the effort (for the moment). 
 
 ## Miscalleneous ideas:
 We can insert new columns in the CSV files each time we pass a new bound (5, 12, 25, 50, 100, 200, 500, 1000…).\
