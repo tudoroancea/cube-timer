@@ -467,13 +467,26 @@ void TimesList::modifyComment(int row) {
 void TimesList::moreInfo(int row) {
 	size_t N(resource.GetRowCount());
 	QString message("Time : ");
-	message += QString::fromStdString(resource.GetCell<std::string>("time", N-1-row));
+	long long readValue(resource.GetCell<long long>("time", N-1-row));
+	if (readValue > 0) {
+		message += Duration<long long>(readValue).toQString();
+	}
 	message += "\n mo3 : ";
-	message += QString::fromStdString(resource.GetCell<std::string>("mo3", N-1-row));
+	readValue = resource.GetCell<long long>("mo3", N-1-row);
+	if (readValue > 0) {
+		message += Duration<long long>(readValue).toQString();
+	}
 	message += "\n ao5 : ";
-	message += QString::fromStdString(resource.GetCell<std::string>("ao5", N-1-row));
+	readValue = resource.GetCell<long long>("ao5", N-1-row);
+	if (readValue > 0) {
+		message += Duration<long long>(readValue).toQString();
+	}
 	message += "\n ao12 : ";
-	message += QString::fromStdString(resource.GetCell<std::string>("ao12", N-1-row));
+	readValue = resource.GetCell<long long>("ao12", N-1-row);
+	if (readValue > 0) {
+		message += Duration<long long>(readValue).toQString();
+	}
+
 	message += "\n Scramble : ";
 	message += QString::fromStdString(resource.GetCell<std::string>("scramble", N-1-row));
 	message += "\n Time Stamp : ";
