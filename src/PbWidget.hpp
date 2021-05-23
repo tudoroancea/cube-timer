@@ -8,14 +8,23 @@
 #define CUBE_TIMER_PBWIDGET_HPP
 
 #include "Duration.hpp"
+#include "TimesList.hpp"
 
 #include <QGroupBox>
+#include <QLabel>
 #include <array>
 
 QT_BEGIN_NAMESPACE
 	//class QVBoxLayout;
-	class QLabel;
+	//class QLabel;
 QT_END_NAMESPACE
+
+class TimeLabel : public Time, public QLabel {
+public:
+	TimeLabel(QString const& str, QWidget* parent, size_t const& row, Type type);
+	TimeLabel(long long const& val, QWidget* parent, size_t const& row, Type type);
+	TimeLabel(TimeItem* item, QWidget* parent);
+};
 
 class PBWidget : public QGroupBox {
 Q_OBJECT
@@ -27,7 +36,7 @@ public:
 	PBWidget();
 
 public slots:
-	//void changePBS(Duration<long long> const& pb, Duration<long long> const& pbMO3, Duration<long long> const& pbAO5, Duration<long long> const& pbAO12);
+	void changePBS(Duration<long long> const& pb, Duration<long long> const& pbMO3, Duration<long long> const& pbAO5, Duration<long long> const& pbAO12);
 };
 
 

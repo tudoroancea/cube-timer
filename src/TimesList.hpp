@@ -12,28 +12,38 @@
 #include "Scramble.hpp"
 
 #include <QTableWidget>
+#include <QTableWidgetItem>
 #include <QDateTime>
 #include <filesystem>
+#include <QLabel>
 
 namespace csv = rapidcsv;
+
+class Time {
+public:
+	enum Type{time, mo3, ao5, ao12};
+protected:
+	size_t rowCSV;
+	Type type;
+public:
+	Time(size_t const& row, Type type);
+	void setRowCSV(size_t const& row);
+	[[nodiscard]] size_t const& getRowCSV() const;
+	[[nodiscard]] Type getType() const;
+	void showDoubleCLick();
+};
+
+class TimeItem : public Time, public QTableWidgetItem {
+public:
+	TimeItem(QString const& str, size_t const& row, Time::Type type);
+	TimeItem(long long const& val, size_t const& row, Time::Type type);
+};
+
 
 class TimesList : public QTableWidget {
 Q_OBJECT
 private:
-	/**
-	 * @brief Absolute canonical path to the default.csv file in the bundle Resources.
-	 */
-	std::filesystem::path defaultPath;
-	/**
-	 * @brief rapidcsv Document with the current handled csv data.
-	 */
-	csv::Document resource;
-	/**
-	 * @brief pretty self-explanatory
-	 */
-	[[maybe_unused]] bool currentCSVIsDefault = true;
-
-//	Utility methods
+	// Utility methods =============
 	/**
 	 * @brief Deletes all the content of the QTableWidget and populates it with the current CSV file.
 	 */
@@ -41,13 +51,11 @@ private:
 	/**
 	 * @brief PBs
 	 */
-	 std::array<Duration<long long>,4> pbs;
+	 //std::array<Duration<long long>,4> pbs;
 	/**
 	 * @brief PBs for the best time, mo3, ao5 and ao12.
 	 */
-	 std::array<std::pair<Duration<long long>,size_t>,4> pbs2;
-
-
+	 //std::array<std::pair<Duration<long long>,size_t>,4> pbs2;
 
 private slots:
 	//	Actions =========
@@ -57,67 +65,34 @@ private slots:
 	void tryScrambleAgain(int row);
 	void copyScramble(int row);
 
+	void treatDoubleClick(QTableWidgetItem* item);
 
 protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 
 public:
-	TimesList(char* const& argv0, QWidget* parent);
+	explicit TimesList(QWidget* parent);
 	~TimesList() override;
 	/**
 	 * @brief Add time to the currently handled CSV data. It won't be saved to a file before the program is closed ot an appropriate method is called.
 	 * @param toAdd
 	 */
 	void addTime(Duration<long long int> const& toAdd, Scramble const& scramble, QDateTime const& timeStamp = QDateTime::currentDateTime(), QString const& comment = QString());
-	/**
-	 * @return currentCSVIsDefault value
-	 */
-	[[nodiscard]] bool isCurrentCSVDefault() const;
 
-	enum ErrorType{wrongPath, wrongFormat, missingMetadata};
+	enum ErrorType{missingMetadata};
 	struct Error : public std::exception {
 		ErrorType type_;
 		explicit Error(ErrorType const& t) : type_(t) {}
 		[[nodiscard]] ErrorType const& type() const {return type_;}
 		[[nodiscard]] const char* what() const noexcept override {
 			switch (type_) {
-				case wrongPath: return "Wrong Path";
-				case wrongFormat: return "Wrong Format";
 				case missingMetadata: return "Missing Metadata";
-				default: return "Settings::Error";
+				default: return "TimesList::Error";
 			}
 		}
 	};
-	static bool hasRightFormat(std::string const& pathToCSV);
-	[[maybe_unused]] static void recomputeStatistics(csv::Document& csvToRecompute);
-	[[maybe_unused]] static void completeColumns(std::string const& pathToCSV);
-	static const std::vector<std::string> metadataHeaders;
 
 public slots:
-	/**
-	 * @brief Load data from default CSV. WARNING: does not saveToCurrentCSV previously loaded data
-	 * Can throw wrongPath or wrongFormat
-	 */
-	void loadDefaultCSV();
-	/**
-	 * @brief Load data from custom CSV. WARNING: does not saveToCurrentCSV previously loaded data
-	 * Can throw wrongPath or wrongFormat
-	 * @param pathToCSV
-	 */
-	void loadCustomCSV(const std::string& pathToCSV);
-	/**
-	 * @brief Saves data to the currently loaded CSV (default or custom location)
-	 */
-	void saveToCurrentCSV();
-	/**
-	 * @brief Saves data to the default CSV (overrides it).
-	 */
-	void saveToDefaultCSV();
-	/**
-	 * @brief Saves data to a custom location. If the given CSV file already exists overrides it, otherwise creates a new file.
-	 * @param pathToCSV
-	 */
-	void saveToCustomCSV(const std::string& pathToCSV);
 	void print(int row, int col);
 
 public: signals:

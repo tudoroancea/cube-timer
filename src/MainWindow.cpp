@@ -9,6 +9,7 @@
 #include "Scramble.hpp"
 #include "TimesList.hpp"
 #include "SettingsDialog.hpp"
+#include "Data.hpp"
 
 #include <QApplication>
 #include <QtWidgets>
@@ -21,16 +22,45 @@
 #include <iostream>
 
 namespace csv = rapidcsv;
+namespace fs = std::filesystem;
+
+Headers::Headers(std::string time, std::string mo3, std::string ao5, std::string ao12, std::string scramble, std::string timeStamp, std::string comment) : time(time), mo3(mo3), ao5(ao5), ao12(ao12), scramble(scramble), timeStamp(timeStamp), comment(comment) {}
+bool Headers::matches(std::vector<std::string> const& vec) const {
+	return (vec.size() == HeadersNumber &&
+			std::find(vec.begin(),vec.end(),time) != vec.end() &&
+			std::find(vec.begin(),vec.end(),mo3) != vec.end() &&
+			std::find(vec.begin(),vec.end(),ao5) != vec.end() &&
+			std::find(vec.begin(),vec.end(),ao12) != vec.end() &&
+			std::find(vec.begin(),vec.end(),scramble) != vec.end() &&
+			std::find(vec.begin(),vec.end(),timeStamp) != vec.end() &&
+			std::find(vec.begin(),vec.end(),comment) != vec.end());
+}
+std::string Headers::operator[](size_t const& index) const {
+	switch (index) {
+		case 0: return time;
+		case 1: return mo3;
+		case 2: return ao5;
+		case 3: return ao12;
+		case 4: return scramble;
+		case 5: return timeStamp;
+		case 6: return comment;
+		default:  return "";
+	}
+}
+size_t MainWindow::currentSession = 0;
+const Headers MainWindow::metadataHeaders("time", "mo3", "ao5", "ao12", "scramble", "timeStamp", "comment");
+Data MainWindow::data = Data();
 
 MainWindow::MainWindow(char* const& argv0)
-	: timer(new QTimer),
+	: exePath(argv0),
+	  settings(nullptr),
+	  timer(new QTimer),
 	  launchingTimer(new QTimer),
+	  dataPath(argv0),
 	  timeLabel(new QLabel("0.000", this)),
 	  scramble(),
 	  scrambleLabel(new QLabel(scramble.toQString(), this)),
 	  mainLayout(new QHBoxLayout),
-	  exePath(argv0),
-	  settings(nullptr),
 	  fileMenu(nullptr)
 {
 	try {
@@ -42,21 +72,17 @@ MainWindow::MainWindow(char* const& argv0)
 			std::exit(1);
 		}
 	}
-	try {
-		timesList = new TimesList(argv0, this);
-	} catch (TimesList::ErrorType const& err) {
-		if (err == TimesList::wrongPath) {
-			QMessageBox::critical(this, "", "The default CSV has not been found. The app cannot start.");
-		} else {
-			QMessageBox::critical(this, "", "The default CSV has been corrupted and has no longer the right format. The app cannot start.");
-		}
-		QCoreApplication::exit(1);
-		std::exit(1);
-	}
+	dataPath /= "../../Resources/default-historic.csv";
+	dataPath = fs::canonical(dataPath);
+	// If there is a problem with the csv file, the app exits with 1, so the TimesList won't even be created.
+	data.Load(dataPath.string());
+
+	timesList = new TimesList(this);
 	connect(timesList, SIGNAL(sendScramble(Scramble const&)), this, SLOT(tryScrambleAgain(Scramble const&)));
 
 	this->setWindowTitle("Cube Timer");
 	this->setMinimumSize(700,500);
+	this->resize(700,500);
 	QList screens(QGuiApplication::screens());
 	this->move(screens[(screens.size() > 1 ? 1 : 0)]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
@@ -94,12 +120,12 @@ MainWindow::MainWindow(char* const& argv0)
 
 MainWindow::~MainWindow() {
 	if (settings->getSetting("autoSave", QVariant(false), this).toBool()) {
-		timesList->saveToCurrentCSV();
+		this->save();
 	} else {
 		if (!savedJustBefore) {
 			QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save data to current CSV ? ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes));
 			if (reply == QMessageBox::Yes) {
-				timesList->saveToCurrentCSV();
+				this->save();
 			}
 		}
 	}
@@ -216,14 +242,6 @@ void MainWindow::createActions() {
 	actions["saveAs"]->setShortcut(QKeySequence::SaveAs);
 	connect(actions["saveAs"], SIGNAL(triggered()), this, SLOT(saveAs()));
 
-	actions["loadDefaultCSV"] = new QAction("Load default CSV", this);
-	actions["loadDefaultCSV"]->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_D));
-	connect(actions["loadDefaultCSV"], SIGNAL(triggered()), this, SLOT(loadDefaultCSV()));
-
-	actions["loadCustomCSV"] = new QAction("Load custom CSV", this);
-	actions["loadCustomCSV"]->setShortcut(QKeySequence::Open);
-	connect(actions["loadCustomCSV"], SIGNAL(triggered()), this, SLOT(loadCustomCSV()));
-
 	actions["openPreferences"] = new QAction("Open Preferences", this);
 	actions["openPreferences"]->setShortcut(QKeySequence::Preferences);
 	connect(actions["openPreferences"], SIGNAL(triggered()), this, SLOT(openPreferences()));
@@ -244,8 +262,6 @@ void MainWindow::createMenus() {
 	fileMenu = menuBar()->addMenu("File");
 	fileMenu->addAction(actions["save"]);
 	fileMenu->addAction(actions["saveAs"]);
-	fileMenu->addAction(actions["loadDefaultCSV"]);
-	fileMenu->addAction(actions["loadCustomCSV"]);
 
 	auto helpMenu = menuBar()->addMenu("Help");
 	helpMenu->addAction(actions["aboutAct"]);
@@ -264,96 +280,18 @@ void MainWindow::createAboutMessage() {
 }
 
 void MainWindow::save() {
-	timesList->saveToCurrentCSV();
+	MainWindow::data.Save();
 	savedJustBefore = true;
 }
 
 void MainWindow::saveAs() {
 	QString str(QFileDialog::getSaveFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
 	if (!str.isEmpty()) {
-		timesList->saveToCustomCSV(str.toStdString());
+		MainWindow::data.Save(str.toStdString());
 		savedJustBefore = true;
 	}
 }
 
-void MainWindow::loadDefaultCSV() {
-	if (!timesList->isCurrentCSVDefault()) {
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::information(this, QString(), "Do you want to save current data ?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-		switch (reply) {
-			case QMessageBox::Ok: {
-				timesList->saveToCurrentCSV();
-				try {
-					timesList->loadDefaultCSV();
-				} catch (TimesList::ErrorType const& err) {
-					switch (err) {
-						case TimesList::wrongPath: {
-							QMessageBox::critical(this, "", "The default CSV has not been found. The app crashed.");
-							QCoreApplication::exit(1);
-							std::exit(1);
-						}
-						case TimesList::wrongFormat: {
-							QMessageBox::critical(this, "",
-							                      "The default CSV has been corrupted and has no longer the right format. The app crashed.");
-							QCoreApplication::exit(1);
-							std::exit(1);
-						}
-						default:
-							break;
-					}
-				}
-				break;
-			}
-			case QMessageBox::No:
-				timesList->loadDefaultCSV();
-				break;
-			default: // happens if one choose Cancel instead of Yes or No
-				break;
-		}
-	} else {
-		QMessageBox::information(this, "", "The default CSV is already open.");
-	}
-}
-
-void MainWindow::loadCustomCSV() {
-	QMessageBox::StandardButton reply(QMessageBox::question(this, QString(), "Do you want to save current data?",  QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::No));
-	bool letsDoIt(false);
-	switch (reply) {
-		case QMessageBox::Yes: {
-			timesList->saveToCurrentCSV();
-			letsDoIt = true;
-			break;
-		}
-		case QMessageBox::No: {
-			letsDoIt = true;
-			break;
-		}
-		default:
-			break;
-	}
-	if (letsDoIt) {
-		QString path(QFileDialog::getOpenFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
-		if (!path.isEmpty()) {
-			try {
-				timesList->loadCustomCSV(path.toStdString());
-			} catch (TimesList::ErrorType const& err) {
-				QString message;
-				switch (err) {
-					case TimesList::wrongPath: {
-						message = QString("There was a problem with the given path. The document has not been open.");
-						break;
-					}
-					case TimesList::wrongFormat:
-						message = QString("The given file did not have the right format (not 4 columns or not the right headers). The new data has not been loaded.");
-						break;
-					default:
-						break;
-				}
-				QMessageBox::warning(this, "", message);
-			}
-		}
-	}
-}
 
 void MainWindow::openPreferences() {
 	SettingsDialog dialog(settings, this);
