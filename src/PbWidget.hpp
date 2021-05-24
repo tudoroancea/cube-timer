@@ -14,12 +14,11 @@
 #include <QLabel>
 #include <array>
 
-QT_BEGIN_NAMESPACE
-	//class QVBoxLayout;
-	//class QLabel;
-QT_END_NAMESPACE
 
 class TimeLabel : public Time, public QLabel {
+protected:
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
+
 public:
 	TimeLabel(QString const& str, QWidget* parent, size_t const& row, Type type);
 	TimeLabel(long long const& val, QWidget* parent, size_t const& row, Type type);
@@ -29,14 +28,13 @@ public:
 class PBWidget : public QGroupBox {
 Q_OBJECT
 private:
-	//QVBoxLayout* layout;
-	std::array<QLabel*, 4> pbs;
+	std::array<TimeLabel*, 4> pbs;
 
 public:
-	PBWidget();
+	PBWidget(QWidget* parent = nullptr);
 
 public slots:
-	void changePBS(Duration<long long> const& pb, Duration<long long> const& pbMO3, Duration<long long> const& pbAO5, Duration<long long> const& pbAO12);
+	void changePBS(std::array<std::pair<Duration<long long>,size_t>,4> const& vals);
 };
 
 

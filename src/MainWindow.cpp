@@ -77,8 +77,34 @@ MainWindow::MainWindow(char* const& argv0)
 	// If there is a problem with the csv file, the app exits with 1, so the TimesList won't even be created.
 	data.Load(dataPath.string());
 
-	timesList = new TimesList(this);
+	timesList = new TimesList();
 	connect(timesList, SIGNAL(sendScramble(Scramble const&)), this, SLOT(tryScrambleAgain(Scramble const&)));
+	pbWidget = new PBWidget();
+	connect(timesList, SIGNAL(sendPBs(std::array<std::pair<Duration<long long>, size_t>, 4> const&)), pbWidget, SLOT(changePBS(std::array<std::pair<Duration<long long>,size_t>,4> const&)));
+	timesList->emitSendPBs();
+
+	createTimers();
+	createLabels();
+	createActions();
+	createMenus();
+	createAboutMessage();
+
+	auto* lhs(new QVBoxLayout);
+	lhs->addWidget(pbWidget, 0);
+	lhs->addWidget(timesList, 1);
+	mainLayout->addLayout(lhs,0);
+
+
+	auto* rhs(new QVBoxLayout);
+	rhs->addWidget(scrambleLabel, 2, Qt::AlignCenter);
+	rhs->addWidget(timeLabel, 8, Qt::AlignCenter);
+
+
+	//mainLayout->addWidget(timesList, 0);
+	mainLayout->addLayout(rhs, 1);
+
+	this->setCentralWidget(new QWidget);
+	this->centralWidget()->setLayout(mainLayout);
 
 	this->setWindowTitle("Cube Timer");
 	this->setMinimumSize(700,500);
@@ -87,33 +113,10 @@ MainWindow::MainWindow(char* const& argv0)
 	this->move(screens[(screens.size() > 1 ? 1 : 0)]->geometry().center() - frameGeometry().center());
 	this->setUnifiedTitleAndToolBarOnMac(true);
 	#ifdef RELEASE_MODE
-		this->statusBar()->addWidget(new QLabel(QString("Version ").append(PROJECT_VERSION)));
+	this->statusBar()->addWidget(new QLabel(QString("Version ").append(PROJECT_VERSION)));
 	#else
-		this->statusBar()->showMessage("Press Space bar to start timer");
+	this->statusBar()->showMessage("Press Space bar to start timer");
 	#endif
-
-	createTimers();
-	createLabels();
-	createActions();
-	createMenus();
-	createAboutMessage();
-
-	auto* rhs(new QVBoxLayout);
-	rhs->addWidget(scrambleLabel, 2, Qt::AlignCenter);
-	rhs->addWidget(timeLabel, 8, Qt::AlignCenter);
-
-	//auto* lhs(new QVBoxLayout);
-	//lhs->addWidget(new QTableWidgetItem);
-	//lhs->addWidget(timesList, 0);
-	//
-	//mainLayout->addLayout(lhs,0);
-
-	mainLayout->addWidget(timesList, 0);
-	mainLayout->addLayout(rhs, 1);
-
-	this->setCentralWidget(new QWidget);
-	this->centralWidget()->setLayout(mainLayout);
-
 	this->show();
 	this->setFocus();
 }

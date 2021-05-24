@@ -88,13 +88,10 @@ void Time::showDoubleCLick() {
 	QMessageBox::information(nullptr, "hey", message);
 }
 
-void TimesList::readCurrentCSV() {
-	//pbs.fill(Duration<long long>());
+void TimesList::readCSV() {
+	pbs.fill({Duration<long long>(LLONG_MAX),0});
 	this->clearContents();
-	size_t N(0);
-	while (!MainWindow::data.getTime<std::string>(N).empty() && N < MainWindow::data.GetRowCount()) {
-		++N;
-	}
+	size_t N(MainWindow::data.sessionRowCount());
 	this->setRowCount(N);
 	bool anyMetadataMissing = false;
 	long long readValue;
@@ -105,19 +102,60 @@ void TimesList::readCurrentCSV() {
 		}
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
 
-		QTableWidgetItem* newItem;
-		readValue = MainWindow::data.getTime<long long>(i);
+		auto lambda = [/*&pbs, i, lineLacksMetadata*/ &](Time::Type type)->QTableWidgetItem*{
+			QTableWidgetItem* newItem;
+			long long readValue(0);
+			size_t pbIndex(0);
+			switch(type) {
+				case Time::time:
+					readValue = MainWindow::data.getTime<long long>(i);
+					break;
+				case Time::mo3: {
+					readValue = MainWindow::data.getMO3<long long>(i);
+					pbIndex = 1;
+					break;
+				}
+				case Time::ao5: {
+					pbIndex = 2;
+					readValue = MainWindow::data.getAO5<long long>(i);
+					break;
+				}
+				case Time::ao12: {
+					pbIndex = 3;
+					readValue = MainWindow::data.getAO12<long long>(i);
+					break;
+				}
+			}
+			if (readValue > 0) {
+				newItem = new TimeItem(readValue, i, type);
+				if (readValue < pbs[pbIndex].first.toT()) {
+					pbs[pbIndex].first = Duration<long long>(readValue);
+					pbs[pbIndex].second = i;
+				}
+			} else {
+				newItem = new QTableWidgetItem(QString());
+				newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
+			}
+			if (lineLacksMetadata) {
+				newItem->setBackground(QBrush(QColor(240,77,113,100)));
+			}
+			return newItem;
+		};
+		/*readValue = MainWindow::data.getTime<long long>(i);
 		if (readValue > 0) {
 			newItem = new TimeItem(readValue, i, Time::time);
+			if (readValue < pbs[0]) {
+				pbs[0] = readValue;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 		}
 		if (lineLacksMetadata) {
 			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}
-		this->setItem(N-i-1,0, newItem);
-
+		}*/
+		this->setItem(N-i-1,0, lambda(Time::time));
+		/*
 		readValue = MainWindow::data.getMO3<long long>(i);
 		if (readValue > 0) {
 			newItem = new TimeItem(readValue, i, Time::mo3);
@@ -127,10 +165,9 @@ void TimesList::readCurrentCSV() {
 		}
 		if (lineLacksMetadata) {
 			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}
-		this->setItem(N-i-1,1, newItem);
-
-		readValue = MainWindow::data.getAO5<long long>(i);
+		}*/
+		this->setItem(N-i-1,1, lambda(Time::mo3));
+		/*readValue = MainWindow::data.getAO5<long long>(i);
 		if (readValue > 0) {
 			newItem = new TimeItem(readValue, i, Time::ao5);
 		} else {
@@ -139,10 +176,9 @@ void TimesList::readCurrentCSV() {
 		}
 		if (lineLacksMetadata) {
 			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}
-		this->setItem(N-i-1,2, newItem);
-
-		readValue = MainWindow::data.getAO12<long long>(i);
+		}*/
+		this->setItem(N-i-1,2, lambda(Time::ao5));
+		/*readValue = MainWindow::data.getAO12<long long>(i);
 		if (readValue > 0) {
 			newItem = new TimeItem(readValue, i, Time::ao12);
 		} else {
@@ -151,9 +187,10 @@ void TimesList::readCurrentCSV() {
 		}
 		if (lineLacksMetadata) {
 			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}
-		this->setItem(N-i-1,3, newItem);
+		}*/
+		this->setItem(N-i-1,3, lambda(Time::ao12));
 	}
+	emit sendPBs(pbs);
 	this->resizeColumnsToContents();
 	this->resizeRowsToContents();
 	connect(this, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(treatDoubleClick(QTableWidgetItem *)));
@@ -172,13 +209,13 @@ TimesList::TimesList(QWidget* parent) : QTableWidget(0, 4, parent) {
 	this->setContextMenuPolicy(Qt::DefaultContextMenu);
 
 	try { // necessary because we want to show this warning only when we load a CSV file (for the first time), not every time we read one's content (for example when we delete times).
-		this->readCurrentCSV();
+		this->readCSV();
 	} catch (Error const& err) {
 		if (err.type() == missingMetadata) {
 			QMessageBox::warning(this, "", "Some times did not have scrambles or time stamps. The corresponding lines are highlighted in red.");
 		} else {
 			#ifdef DEBUG_MODE
-			std::cerr << "Unexpected error raised by TimesList::readCurrentCSV()" << std::endl;
+			std::cerr << "Unexpected error raised by TimesList::readCSV()" << std::endl;
 			#endif
 		}
 	}
@@ -195,9 +232,10 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 		MainWindow::data.setScramble(oldRowCountCSV, scramble.toString());
 		MainWindow::data.setTimeStamp(oldRowCountCSV, timeStamp.toString("yyyy-MM-dd-hh:mm:ss.zzz").toStdString());
 		MainWindow::data.setComment(oldRowCountCSV, comment.toStdString());
-		//if (toAdd < pbs[0]) {
-		//	pbs[0] = toAdd;
-		//}
+		if (toAdd < pbs[0].first) {
+			pbs[0].first = toAdd;
+			pbs[0].second = oldRowCountCSV;
+		}
 		this->insertRow(0);
 		QTableWidgetItem* newItem(new TimeItem(toAdd.toQString(), oldRowCountCSV, Time::time));
 		this->setItem(0,0, newItem);
@@ -211,9 +249,10 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			mo3 /= 3;
 			MainWindow::data.setMO3<long long>(oldRowCountCSV, mo3);
 			newItem = new TimeItem(Duration<long long>(mo3).toQString(), oldRowCountCSV, Time::mo3);
-			//if (mo3 < pbs[1]) {
-			//	pbs[1] = mo3;
-			//}
+			if (mo3 < pbs[1].first) {
+				pbs[1].first = mo3;
+				pbs[1].second = oldRowCountCSV;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
@@ -238,9 +277,10 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			ao5 /= 3;
 			MainWindow::data.setAO5<long long>(oldRowCountCSV, ao5);
 			newItem = new TimeItem(Duration<long long>(ao5).toQString(), oldRowCountCSV, Time::ao5);
-			//if (ao5 < pbs[2]) {
-			//	pbs[2] = ao5;
-			//}
+			if (ao5 < pbs[2].first) {
+				pbs[2].first = ao5;
+				pbs[2].second = oldRowCountCSV;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
@@ -265,9 +305,10 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			ao12 /= 10;
 			MainWindow::data.setAO12<long long>(oldRowCountCSV, ao12);
 			newItem = new TimeItem(Duration<long long>(ao12).toQString(), oldRowCountCSV, Time::ao12);
-			//if (ao12 < pbs[3]) {
-			//	pbs[3] = ao12;
-			//}
+			if (ao12 < pbs[3].first) {
+				pbs[3].first = ao12;
+				pbs[3].second = oldRowCountCSV;
+			}
 		} else {
 			newItem = new QTableWidgetItem(QString());
 			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
@@ -277,6 +318,7 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 		this->setVerticalHeaderItem(0,new QTableWidgetItem(QString(std::to_string(oldRowCountTable+1).c_str())));
 		this->resizeRowsToContents();
 		this->resizeColumnsToContents();
+		emit sendPBs(pbs);
 	} else {
 		std::cerr << "CSV file and table don't have the same number of rows" << std::endl;
 	}
@@ -425,8 +467,33 @@ void TimesList::deleteTime(int row) {
 	}
 	this->removeRow(row);
 	MainWindow::data.recomputeStatistics();
+	//pbs.fill({Duration<long long>(LLONG_MAX), 0});
+	//long long readValue(LLONG_MAX);
+	//for (size_t i(0); i < MainWindow::data.sessionRowCount(); ++i) {
+	//	readValue = MainWindow::data.getTime<long long>(i);
+	//	if (readValue < pbs[0].first) {
+	//		pbs[0].first = readValue;
+	//		pbs[0].second = i;
+	//	}
+	//	readValue = MainWindow::data.getMO3<long long>(i);
+	//	if (readValue < pbs[1].first) {
+	//		pbs[1].first = readValue;
+	//		pbs[1].second = i;
+	//	}
+	//	readValue = MainWindow::data.getAO5<long long>(i);
+	//	if (readValue < pbs[2].first) {
+	//		pbs[2].first = readValue;
+	//		pbs[2].second = i;
+	//	}
+	//	readValue = MainWindow::data.getAO12<long long>(i);
+	//	if (readValue < pbs[3].first) {
+	//		pbs[3].first = readValue;
+	//		pbs[3].second = i;
+	//	}
+	//}
+	//emit sendPBs(pbs);
 	try {
-		this->readCurrentCSV();
+		this->readCSV();
 	} catch (...) {
 	//	The only error that may be thrown is TimesList::missingData, which does not matter at this point of the execution.
 	}
@@ -451,6 +518,10 @@ void TimesList::treatDoubleClick(QTableWidgetItem* item) {
 	if ((ptr = dynamic_cast<TimeItem*>(item))) {
 		ptr->showDoubleCLick();
 	}
+}
+
+void TimesList::emitSendPBs() {
+	emit sendPBs(pbs);
 }
 
 #pragma clang diagnostic pop

@@ -11,7 +11,7 @@
 #include "libs/rapidcsv.h"
 #include "Settings.hpp"
 #include "Scramble.hpp"
-//#include "Data.hpp"
+#include "PbWidget.hpp"
 
 #include <QMainWindow>
 #include <filesystem>
@@ -75,6 +75,7 @@ private:
 	QLabel* scrambleLabel;
 	QHBoxLayout* mainLayout;
 	TimesList* timesList;
+	PBWidget* pbWidget;
 
 	// Behavior helps =====================
 	/**

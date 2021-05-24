@@ -47,7 +47,7 @@ private:
 	/**
 	 * @brief Deletes all the content of the QTableWidget and populates it with the current CSV file.
 	 */
-	void readCurrentCSV();
+	void readCSV();
 	/**
 	 * @brief PBs
 	 */
@@ -55,7 +55,7 @@ private:
 	/**
 	 * @brief PBs for the best time, mo3, ao5 and ao12.
 	 */
-	 //std::array<std::pair<Duration<long long>,size_t>,4> pbs2;
+	 std::array<std::pair<Duration<long long>,size_t>,4> pbs;
 
 private slots:
 	//	Actions =========
@@ -71,7 +71,7 @@ protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 
 public:
-	explicit TimesList(QWidget* parent);
+	explicit TimesList(QWidget* parent = nullptr);
 	~TimesList() override;
 	/**
 	 * @brief Add time to the currently handled CSV data. It won't be saved to a file before the program is closed ot an appropriate method is called.
@@ -91,13 +91,14 @@ public:
 			}
 		}
 	};
+	void emitSendPBs();
 
 public slots:
 	void print(int row, int col);
 
 public: signals:
 	void sendScramble(Scramble const& toTry);
-	void sendPBs(Duration<long long> pb, Duration<long long> pbMO3, Duration<long long> pbAO5, Duration<long long> pbAO12);
+	void sendPBs(std::array<std::pair<Duration<long long>,size_t>,4> const& pbs);
 };
 
 
