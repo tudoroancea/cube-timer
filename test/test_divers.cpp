@@ -28,7 +28,16 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
-	TimesList::recomputeStatistics("/Users/tudoroancea/Desktop/blabla.csv");
+	csv::Document doc("/Users/tudoroancea/CLionProjects/cube-timer/cmake-build-debug/src/cube-timer.app/Contents/Resources/default-historic.csv",
+	                          csv::LabelParams(0,-1),
+	                          csv::SeparatorParams(),
+	                          csv::ConverterParams(true, 0.0, 0));
+	std::cout << doc.GetColumnIdx(std::to_string(0)+MainWindow::metadataHeaders.time) << std::endl;
+	std::cout << std::to_string(0)+MainWindow::metadataHeaders.time << std::endl;
+	auto hdr(doc.GetColumnNames());
+	std::copy(hdr.begin(), hdr.end(), std::ostream_iterator<std::string>(std::cout," ; "));
+	doc.SetCell<std::string>(doc.GetColumnIdx(std::to_string(0)+MainWindow::metadataHeaders.time), 0, "");
+	doc.Save();
 	return 0;
 }
 #pragma clang diagnostic pop

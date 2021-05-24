@@ -11,6 +11,7 @@
 #include "libs/rapidcsv.h"
 #include "Settings.hpp"
 #include "Scramble.hpp"
+#include "PbWidget.hpp"
 
 #include <QMainWindow>
 #include <filesystem>
@@ -21,10 +22,39 @@ QT_BEGIN_NAMESPACE
 	class QTimer;
 	class QHBoxLayout;
 QT_END_NAMESPACE
+class Data;
+
+#define HeadersNumber 7
+struct Headers {
+	std::string time;
+	std::string mo3;
+	std::string ao5;
+	std::string ao12;
+	std::string scramble;
+	std::string timeStamp;
+	std::string comment;
+	Headers(std::string time, std::string mo3, std::string ao5, std::string ao12, std::string scramble, std::string timeStamp, std::string comment);
+	bool matches(std::vector<std::string> const& vec) const;
+	std::string operator[](size_t const& index) const;
+};
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
 private:
+	//	Global info / settings ============
+	/**
+	 * @brief contains argv[0]
+	 */
+	[[maybe_unused]] char* exePath;
+	/**
+	 * @brief Brief description of the app to display in the About action
+	 */
+	QString aboutMessage;
+	/**
+	 * @brief Pretty self-explanatory
+	 */
+	Settings* settings;
+
 	// Timers
 	/**
 	 * @brief Main timer used to time the cube and update the displayed time live
@@ -45,6 +75,7 @@ private:
 	QLabel* scrambleLabel;
 	QHBoxLayout* mainLayout;
 	TimesList* timesList;
+	PBWidget* pbWidget;
 
 	// Behavior helps =====================
 	/**
@@ -55,20 +86,6 @@ private:
 	 * @brief Indicates if the last action was saving (to current location)..
 	 */
 	bool savedJustBefore = false;
-
-	//	Global info / settings ============
-	/**
-	 * @brief contains argv[0]
-	 */
-	[[maybe_unused]] char* exePath;
-	/**
-	 * @brief Brief description of the app to display in the About action
-	 */
-	QString aboutMessage;
-	/**
-	 * @brief Pretty self-explanatory
-	 */
-	Settings* settings;
 
 	// Actions =========
 	std::unordered_map<std::string, QAction*> actions;
@@ -110,12 +127,18 @@ private slots:
 	 * @brief Saves data to any CSV (default or custom location).
 	 */
 	void saveAs();
-	void loadDefaultCSV();
-	void loadCustomCSV();
+
+	//void loadCustomCSV();
 	void openPreferences();
 	void about();
 
 public:
+	// CSV Data
+	static Data data;
+	static size_t currentSession;
+	std::filesystem::path dataPath;
+	static const Headers metadataHeaders;
+
 	explicit MainWindow(char* const& argv0);
 	~MainWindow() override;
 	void keyPressEvent(QKeyEvent* event) override;

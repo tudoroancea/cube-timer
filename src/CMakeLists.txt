@@ -9,7 +9,7 @@ add_library(timer STATIC
 			libs/rapidcsv.h
 			Settings.cpp Settings.hpp
 			SettingsDialog.hpp SettingsDialog.cpp
-			)
+			PbWidget.cpp PbWidget.hpp Data.cpp Data.hpp)
 target_link_libraries(timer ${REQUIRED_LIBS_QUALIFIED})
 # Main Target ================================================================================
 if (APPLE)

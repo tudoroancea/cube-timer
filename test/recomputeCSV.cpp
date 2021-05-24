@@ -4,27 +4,24 @@
 // Licensed under the MIT license (see at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)
 //
 
-#include "TimesList.hpp"
-#include "libs/rapidcsv.h"
+#include "Data.hpp"
+//#include "libs/rapidcsv.h"
 
 int main(int argc, char** argv) {
-	if (argc >= 2) {
-		csv::Document doc;
+	if (argc >= 3) {
+		Data doc;
 		bool works = true;
 		try {
-			doc.Load(argv[1],
-			         csv::LabelParams(0,-1),
-			         csv::SeparatorParams(),
-			         csv::ConverterParams(true, 0.0, 0));
+			doc.Load(argv[1]);
 		} catch (...) {
 			works = false;
 			std::cerr << "The document does not exist" << std::endl;
 		}
 		if (works) {
-			TimesList::recomputeStatistics(doc);
+			doc.recomputeStatistics(std::stoul(argv[2]));
 		}
 	} else {
-		std::cerr << "no argument" << std::endl;
+		std::cerr << "Not enough arguments" << std::endl;
 	}
     return 0;
 }

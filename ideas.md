@@ -31,7 +31,7 @@ windows as it won't use filesystem anymore (which currently is not fully support
 
 [ ] Use qrc instead of the macOS bundle Resources. UPDATE : to do so, we would have to modify rapidcsv.h to use
 QFile, QTextStream and QStrings. Although it would be a great exercise to understand how to really handle text files,
-it would be very time consuming and not necessarily worth the effort (for the moment). 
+it would be very time consuming and not necessarily worth the effort (for the moment).
 
 ## Miscalleneous ideas:
 We can insert new columns in the CSV files each time we pass a new bound (5, 12, 25, 50, 100, 200, 500, 1000…).\
@@ -48,6 +48,11 @@ Timer locked and only scrambles
 Redo a scramble (select a previous time and load the scramble)
 
 add button for next scramble and previous scramble (keep the last 10 generated scrambles)
+
+We can still save teh current CSV file in a custom location, but we can't load external CSV files anymore. In the future we will be able to, by simply opening it and 
+We use GitHub gists to sync the default-historic.csv file
+historic.csv contains Several columns (one for each session)
+
 
 ## Long shots:
 - Add scramble image
