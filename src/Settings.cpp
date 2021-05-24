@@ -11,6 +11,7 @@
 #include <QString>
 #include <QMessageBox>
 #include <QDialog>
+#include <QCoreApplication>
 
 namespace fs = std::filesystem;
 namespace csv = rapidcsv;
@@ -32,7 +33,9 @@ Settings::Settings(char* const& argv0) {
 		#ifdef DEBUG_MODE
 		std::cerr << "Settings file not found." << std::endl;
 		#endif
-		throw Error(wrongPath);
+		QMessageBox::critical(nullptr, "", "The settings could not be loaded correctly.");
+		QCoreApplication::exit(1);
+		std::exit(1);
 	}
 	size_t nbrCols(data.GetColumnCount());
 	if (nbrCols != 1) {
@@ -48,14 +51,18 @@ Settings::Settings(char* const& argv0) {
 			#ifdef DEBUG_MODE
 			std::cerr << "Default settings file not found." << std::endl;
 			#endif
-			throw Error(wrongPath);
+			QMessageBox::critical(nullptr, "", "The settings could not be loaded correctly.");
+			QCoreApplication::exit(1);
+			std::exit(1);
 		}
 		nbrCols = data.GetColumnCount();
 		if (nbrCols != 1) {
 			#ifdef DEBUG_MODE
 			std::cerr << "Both settings and default settings do not have the right format (not 1 header column and 1 value column)." << std::endl;
 			#endif
-			throw Error(wrongFormat);
+			QMessageBox::critical(nullptr, "", "The settings could not be loaded correctly.");
+			QCoreApplication::exit(1);
+			std::exit(1);
 		}
 		QMessageBox::warning(nullptr, "", "The default settings have been loaded as the current ones did not have the right format.");
 	}

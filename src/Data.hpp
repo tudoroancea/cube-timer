@@ -11,9 +11,6 @@
 #include "libs/rapidcsv.h"
 #include <string>
 
-//#include <QGuiApplication>
-//#include <QMessageBox>
-
 namespace csv = rapidcsv;
 
 class Data : public csv::Document {
@@ -60,7 +57,7 @@ public:
 template<typename T>
 T Data::getTime(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[0], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.time, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -71,7 +68,7 @@ T Data::getTime(size_t row, size_t session) {
 template<typename T>
 T Data::getMO3(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[1], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.mo3, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -82,7 +79,7 @@ T Data::getMO3(size_t row, size_t session) {
 template<typename T>
 T Data::getAO5(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[2], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.ao5, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -93,7 +90,7 @@ T Data::getAO5(size_t row, size_t session) {
 template<typename T>
 T Data::getAO12(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[3], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.ao12, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -104,7 +101,7 @@ T Data::getAO12(size_t row, size_t session) {
 template<typename T>
 T Data::getScramble(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[4], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.scramble, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -115,7 +112,7 @@ T Data::getScramble(size_t row, size_t session) {
 template<typename T>
 T Data::getTimeStamp(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[5], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.timeStamp, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {
@@ -126,7 +123,7 @@ T Data::getTimeStamp(size_t row, size_t session) {
 template<typename T>
 T Data::getComment(size_t row, size_t session) {
 	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders[6], row);
+		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.comment, row);
 	} else if (typeid(T) == typeid(std::string)) {
 		return T();
 	} else {

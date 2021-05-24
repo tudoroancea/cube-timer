@@ -99,11 +99,9 @@ public:
 	}
 
 	bool operator<(Duration<T> const& other) {
-		//return (hours < other.hours || minutes < other.minutes || seconds < other.seconds || milliseconds < other.milliseconds);
 		return this->toT() < other.toT();
 	}
 	bool operator<=(Duration<T> const& other) {
-		//return (hours <= other.hours || minutes <= other.minutes || seconds <= other.seconds || milliseconds <= other.milliseconds);
 		return this->toT() <= other.toT();
 	}
 

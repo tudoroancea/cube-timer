@@ -13,14 +13,12 @@
 #include "Data.hpp"
 
 #include <QTableWidget>
-#include <QTableWidgetItem>
 #include <QHeaderView>
 #include <filesystem>
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QInputDialog>
 #include <QDialog>
-#include <QLabel>
 #include <QMessageBox>
 #include <QGuiApplication>
 #include <QClipboard>
@@ -50,36 +48,39 @@ void Time::showDoubleCLick() {
 	QString message;
 	switch (type) {
 		case time:{
-			message += "Time : ";
-			message += Duration<long long>(MainWindow::data.getTime<long long>(rowCSV)).toQString();
+			message += "Time n°"+QString::fromStdString(std::to_string(rowCSV+1))+" : ";
+			message += Duration<long long>(MainWindow::data->getTime<long long>(rowCSV)).toQString();
 		    break;
 		}
 		case mo3:{
-			message +="mean of 3 : ";
-			message += Duration<long long>(MainWindow::data.getMO3<long long>(rowCSV)).toQString();
+			message += "Mean of 3 n°"+QString::fromStdString(std::to_string(rowCSV+1))+" : ";
+			message += Duration<long long>(MainWindow::data->getMO3<long long>(rowCSV)).toQString();
 			message += "\n\n Time list:\n";
 			for (size_t i(0); i < 3; ++i) {
-				message += Duration<long long>(MainWindow::data.getTime<long long>(rowCSV-i)).toQString();
+				message += "n°"+QString::fromStdString(std::to_string(rowCSV-i+1))+" : ";
+				message += Duration<long long>(MainWindow::data->getTime<long long>(rowCSV-i)).toQString();
 				message += "\n";
 			}
 			break;
 		}
 		case ao5:{
-			message += "average of 5 : ";
-			message += Duration<long long>(MainWindow::data.getAO5<long long>(rowCSV)).toQString();
+			message += "Average of 5 n°"+QString::fromStdString(std::to_string(rowCSV+1))+" : ";
+			message += Duration<long long>(MainWindow::data->getAO5<long long>(rowCSV)).toQString();
 			message += "\n\n Time list:\n";
 			for (size_t i(0); i < 5; ++i) {
-				message += Duration<long long>(MainWindow::data.getTime<long long>(rowCSV-i)).toQString();
+				message +="n°"+QString::fromStdString(std::to_string(rowCSV-i+1))+" : ";
+				message += Duration<long long>(MainWindow::data->getTime<long long>(rowCSV-i)).toQString();
 				message += "\n";
 			}
 			break;
 		}
 		case ao12:{
-			message += "average of 12 : ";
-			message += Duration<long long>(MainWindow::data.getAO12<long long>(rowCSV)).toQString();
+			message += "Average of 12 n°"+QString::fromStdString(std::to_string(rowCSV+1))+" : ";
+			message += Duration<long long>(MainWindow::data->getAO12<long long>(rowCSV)).toQString();
 			message += "\n\n Time list:\n";
 			for (size_t i(0); i < 12; ++i) {
-				message += Duration<long long>(MainWindow::data.getTime<long long>(rowCSV-i)).toQString();
+				message += "n°"+QString::fromStdString(std::to_string(rowCSV-i+1))+" : ";
+				message += Duration<long long>(MainWindow::data->getTime<long long>(rowCSV-i)).toQString();
 				message += "\n";
 			}
 			break;
@@ -91,38 +92,38 @@ void Time::showDoubleCLick() {
 void TimesList::readCSV() {
 	pbs.fill({Duration<long long>(LLONG_MAX),0});
 	this->clearContents();
-	size_t N(MainWindow::data.sessionRowCount());
+	size_t N(MainWindow::data->sessionRowCount());
 	this->setRowCount(N);
 	bool anyMetadataMissing = false;
 	long long readValue;
 	for (int i(0); i < N; ++i) {
-		bool lineLacksMetadata = (MainWindow::data.getScramble<std::string>(i).empty() || MainWindow::data.getTimeStamp<std::string>(i).empty());
+		bool lineLacksMetadata = (MainWindow::data->getScramble<std::string>(i).empty() || MainWindow::data->getTimeStamp<std::string>(i).empty());
 		if (lineLacksMetadata) {
 			anyMetadataMissing = true;
 		}
 		this->setVerticalHeaderItem(i,new QTableWidgetItem(QString(std::to_string(N-i).c_str())));
 
-		auto lambda = [/*&pbs, i, lineLacksMetadata*/ &](Time::Type type)->QTableWidgetItem*{
+		auto lambda = [&](Time::Type type)->QTableWidgetItem*{
 			QTableWidgetItem* newItem;
 			long long readValue(0);
 			size_t pbIndex(0);
 			switch(type) {
 				case Time::time:
-					readValue = MainWindow::data.getTime<long long>(i);
+					readValue = MainWindow::data->getTime<long long>(i);
 					break;
 				case Time::mo3: {
-					readValue = MainWindow::data.getMO3<long long>(i);
+					readValue = MainWindow::data->getMO3<long long>(i);
 					pbIndex = 1;
 					break;
 				}
 				case Time::ao5: {
 					pbIndex = 2;
-					readValue = MainWindow::data.getAO5<long long>(i);
+					readValue = MainWindow::data->getAO5<long long>(i);
 					break;
 				}
 				case Time::ao12: {
 					pbIndex = 3;
-					readValue = MainWindow::data.getAO12<long long>(i);
+					readValue = MainWindow::data->getAO12<long long>(i);
 					break;
 				}
 			}
@@ -141,53 +142,9 @@ void TimesList::readCSV() {
 			}
 			return newItem;
 		};
-		/*readValue = MainWindow::data.getTime<long long>(i);
-		if (readValue > 0) {
-			newItem = new TimeItem(readValue, i, Time::time);
-			if (readValue < pbs[0]) {
-				pbs[0] = readValue;
-			}
-		} else {
-			newItem = new QTableWidgetItem(QString());
-			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
-		}
-		if (lineLacksMetadata) {
-			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}*/
 		this->setItem(N-i-1,0, lambda(Time::time));
-		/*
-		readValue = MainWindow::data.getMO3<long long>(i);
-		if (readValue > 0) {
-			newItem = new TimeItem(readValue, i, Time::mo3);
-		} else {
-			newItem = new QTableWidgetItem(QString());
-			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
-		}
-		if (lineLacksMetadata) {
-			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}*/
 		this->setItem(N-i-1,1, lambda(Time::mo3));
-		/*readValue = MainWindow::data.getAO5<long long>(i);
-		if (readValue > 0) {
-			newItem = new TimeItem(readValue, i, Time::ao5);
-		} else {
-			newItem = new QTableWidgetItem(QString());
-			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
-		}
-		if (lineLacksMetadata) {
-			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}*/
 		this->setItem(N-i-1,2, lambda(Time::ao5));
-		/*readValue = MainWindow::data.getAO12<long long>(i);
-		if (readValue > 0) {
-			newItem = new TimeItem(readValue, i, Time::ao12);
-		} else {
-			newItem = new QTableWidgetItem(QString());
-			newItem->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable);
-		}
-		if (lineLacksMetadata) {
-			newItem->setBackground(QBrush(QColor(240,77,113,100)));
-		}*/
 		this->setItem(N-i-1,3, lambda(Time::ao12));
 	}
 	emit sendPBs(pbs);
@@ -224,14 +181,14 @@ TimesList::TimesList(QWidget* parent) : QTableWidget(0, 4, parent) {
 TimesList::~TimesList() {}
 
 void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramble, QDateTime const& timeStamp, QString const& comment) {
-	size_t oldRowCountCSV(MainWindow::data.sessionRowCount());
+	size_t oldRowCountCSV(MainWindow::data->sessionRowCount());
 	size_t oldRowCountTable(this->rowCount());
 	if (oldRowCountTable == oldRowCountCSV) {
 		// On ajoute le temps
-		MainWindow::data.setTime(oldRowCountCSV, toAdd.toT());
-		MainWindow::data.setScramble(oldRowCountCSV, scramble.toString());
-		MainWindow::data.setTimeStamp(oldRowCountCSV, timeStamp.toString("yyyy-MM-dd-hh:mm:ss.zzz").toStdString());
-		MainWindow::data.setComment(oldRowCountCSV, comment.toStdString());
+		MainWindow::data->setTime(oldRowCountCSV, toAdd.toT());
+		MainWindow::data->setScramble(oldRowCountCSV, scramble.toString());
+		MainWindow::data->setTimeStamp(oldRowCountCSV, timeStamp.toString("yyyy-MM-dd-hh:mm:ss.zzz").toStdString());
+		MainWindow::data->setComment(oldRowCountCSV, comment.toStdString());
 		if (toAdd < pbs[0].first) {
 			pbs[0].first = toAdd;
 			pbs[0].second = oldRowCountCSV;
@@ -244,10 +201,10 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 		if (oldRowCountCSV >= 2) {
 			long long mo3(0);
 			for (size_t i(oldRowCountCSV-2); i <= oldRowCountCSV; ++i) {
-				mo3 += MainWindow::data.getTime<long long>(i);
+				mo3 += MainWindow::data->getTime<long long>(i);
 			}
 			mo3 /= 3;
-			MainWindow::data.setMO3<long long>(oldRowCountCSV, mo3);
+			MainWindow::data->setMO3<long long>(oldRowCountCSV, mo3);
 			newItem = new TimeItem(Duration<long long>(mo3).toQString(), oldRowCountCSV, Time::mo3);
 			if (mo3 < pbs[1].first) {
 				pbs[1].first = mo3;
@@ -263,7 +220,7 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			long long ao5(0);
 			long long min(LLONG_MAX), max(0), readValue(0);
 			for (size_t i(oldRowCountCSV-4); i <= oldRowCountCSV; ++i) {
-				readValue = MainWindow::data.getTime<long long>(i);
+				readValue = MainWindow::data->getTime<long long>(i);
 				if (readValue < min) {
 					min = readValue;
 				}
@@ -275,7 +232,7 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			ao5 -= min;
 			ao5 -= max;
 			ao5 /= 3;
-			MainWindow::data.setAO5<long long>(oldRowCountCSV, ao5);
+			MainWindow::data->setAO5<long long>(oldRowCountCSV, ao5);
 			newItem = new TimeItem(Duration<long long>(ao5).toQString(), oldRowCountCSV, Time::ao5);
 			if (ao5 < pbs[2].first) {
 				pbs[2].first = ao5;
@@ -291,7 +248,7 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			long long ao12(0);
 			long long min(LLONG_MAX), max(0), readValue(0);
 			for (size_t i(oldRowCountCSV-11); i <= oldRowCountCSV; ++i) {
-				readValue = MainWindow::data.getTime<long long>(i);
+				readValue = MainWindow::data->getTime<long long>(i);
 				if (readValue < min) {
 					min = readValue;
 				}
@@ -303,7 +260,7 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 			ao12 -= min;
 			ao12 -= max;
 			ao12 /= 10;
-			MainWindow::data.setAO12<long long>(oldRowCountCSV, ao12);
+			MainWindow::data->setAO12<long long>(oldRowCountCSV, ao12);
 			newItem = new TimeItem(Duration<long long>(ao12).toQString(), oldRowCountCSV, Time::ao12);
 			if (ao12 < pbs[3].first) {
 				pbs[3].first = ao12;
@@ -319,6 +276,9 @@ void TimesList::addTime(Duration<long long> const& toAdd, Scramble const& scramb
 		this->resizeRowsToContents();
 		this->resizeColumnsToContents();
 		emit sendPBs(pbs);
+		if (MainWindow::settings->getSetting("autoSave", QVariant(false), this).toBool()) {
+			MainWindow::data->Save();
+		}
 	} else {
 		std::cerr << "CSV file and table don't have the same number of rows" << std::endl;
 	}
@@ -351,7 +311,7 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 		menu.addAction("More Info", [this, row](){this->moreInfo(row);}, QKeySequence(Qt::Key_I));
 		menu.addAction("Modify Comment", [this, row](){this->modifyComment(row);}, QKeySequence(Qt::Key_M));
 		menu.addAction("Copy Scramble", [row](){
-			QGuiApplication::clipboard()->setText(QString::fromStdString(MainWindow::data.getScramble<std::string>(MainWindow::data.GetRowCount()-1-row)));
+			QGuiApplication::clipboard()->setText(QString::fromStdString(MainWindow::data->getScramble<std::string>(MainWindow::data->sessionRowCount()-1-row)));
 		});
 		menu.addAction("Try Scramble again", [this, row](){this->tryScrambleAgain(row);});
 		menu.addAction("Delete time", [this, row](){
@@ -375,14 +335,14 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 		menu.addAction("Copy Scrambles", [rows](){
 			QString scrambles;
 			for (auto const & row : rows) {
-				scrambles += QString::fromStdString(MainWindow::data.getScramble<std::string>(MainWindow::data.GetRowCount()-1-row))+"; ";
+				scrambles += QString::fromStdString(MainWindow::data->getScramble<std::string>(MainWindow::data->sessionRowCount()-1-row))+"; ";
 			}
 			scrambles.remove(scrambles.size()-3,3);
 			QGuiApplication::clipboard()->setText(scrambles);
 		});
-		menu.addAction("Delete time", [this, rows](){
+		menu.addAction("Delete times", [this, rows](){
 			auto result(QMessageBox::warning(this, "",
-			                                 "Are you sure you want to delete this time? This operation is irreversible.",
+			                                 "Are you sure you want to delete this times? This operation is irreversible.",
 			                                 QMessageBox::Cancel|QMessageBox::Yes,
 #ifdef DEBUG_MODE
                                              QMessageBox::Yes
@@ -402,107 +362,87 @@ void TimesList::contextMenuEvent(QContextMenuEvent* event) {
 }
 
 void TimesList::modifyComment(int row) {
-	size_t N(MainWindow::data.GetRowCount());
+	size_t N(MainWindow::data->sessionRowCount());
 	QString input(QInputDialog::getText(this,
 									 "Modify Comment",
 									 "Enter comments",
 									 QLineEdit::Normal,
-									 QString::fromStdString(MainWindow::data.getComment<std::string>(N-1-row))));
+									 QString::fromStdString(MainWindow::data->getComment<std::string>(N-1-row))));
 	if (!input.isNull()) {
-		MainWindow::data.setComment(N-1-row, input.toStdString());
-		//MainWindow::data.Save();
+		MainWindow::data->setComment(N-1-row, input.toStdString());
+		if (MainWindow::settings->getSetting("autoSave", QVariant(false), this).toBool()) {
+			MainWindow::data->Save();
+		}
 	}
 }
 
 void TimesList::moreInfo(int row) {
-	size_t N(MainWindow::data.GetRowCount());
+	size_t N(MainWindow::data->sessionRowCount());
 	QString message("Time : ");
-	long long readValue(MainWindow::data.getTime<long long>(N-1-row));
+	long long readValue(MainWindow::data->getTime<long long>(N-1-row));
 	if (readValue > 0) {
 		message += Duration<long long>(readValue).toQString();
 	}
 	message += "\n mo3 : ";
-	readValue = MainWindow::data.getMO3<long long>(N-1-row);
+	readValue = MainWindow::data->getMO3<long long>(N-1-row);
 	if (readValue > 0) {
 		message += Duration<long long>(readValue).toQString();
 	}
 	message += "\n ao5 : ";
-	readValue = MainWindow::data.getAO5<long long>(N-1-row);
+	readValue = MainWindow::data->getAO5<long long>(N-1-row);
 	if (readValue > 0) {
 		message += Duration<long long>(readValue).toQString();
 	}
 	message += "\n ao12 : ";
-	readValue = MainWindow::data.getAO12<long long>(N-1-row);
+	readValue = MainWindow::data->getAO12<long long>(N-1-row);
 	if (readValue > 0) {
 		message += Duration<long long>(readValue).toQString();
 	}
 	message += "\n Scramble : ";
-	message += QString::fromStdString(MainWindow::data.getScramble<std::string>(N-1-row));
+	message += QString::fromStdString(MainWindow::data->getScramble<std::string>(N-1-row));
 	message += "\n Time Stamp : ";
-	message += QString::fromStdString(MainWindow::data.getTimeStamp<std::string>(N-1-row));
+	message += QString::fromStdString(MainWindow::data->getTimeStamp<std::string>(N-1-row));
 	message += "\n Comment : ";
-	message += QString::fromStdString(MainWindow::data.getComment<std::string>(N-1-row));
+	message += QString::fromStdString(MainWindow::data->getComment<std::string>(N-1-row));
 	QMessageBox::information(this, QString("Information on Time ")+QString::fromStdString(std::to_string(N-row)), message);
 }
 
 void TimesList::deleteTime(int row) {
-	size_t oldRowCount(MainWindow::data.sessionRowCount());
+	size_t oldRowCount(MainWindow::data->sessionRowCount());
 	size_t oldRank(oldRowCount-1-row);
 	for (size_t i(oldRank); i < oldRowCount-1; ++i) {
-		MainWindow::data.setTime(i, MainWindow::data.getTime<std::string>(i+1));
-		MainWindow::data.setMO3(i, MainWindow::data.getMO3<std::string>(i+1));
-		MainWindow::data.setAO5(i, MainWindow::data.getAO5<std::string>(i+1));
-		MainWindow::data.setScramble(i, MainWindow::data.getScramble<std::string>(i+1));
-		MainWindow::data.setTimeStamp(i, MainWindow::data.getTimeStamp<std::string>(i+1));
-		MainWindow::data.setComment(i, MainWindow::data.getComment<std::string>(i+1));
+		MainWindow::data->setTime(i, MainWindow::data->getTime<std::string>(i+1));
+		MainWindow::data->setMO3(i, MainWindow::data->getMO3<std::string>(i+1));
+		MainWindow::data->setAO5(i, MainWindow::data->getAO5<std::string>(i+1));
+		MainWindow::data->setScramble(i, MainWindow::data->getScramble<std::string>(i+1));
+		MainWindow::data->setTimeStamp(i, MainWindow::data->getTimeStamp<std::string>(i+1));
+		MainWindow::data->setComment(i, MainWindow::data->getComment<std::string>(i+1));
 	}
-	MainWindow::data.setTime<std::string>(oldRowCount-1, "");
-	MainWindow::data.setMO3<std::string>(oldRowCount-1, "");
-	MainWindow::data.setAO5<std::string>(oldRowCount-1, "");
-	MainWindow::data.setScramble<std::string>(oldRowCount-1, "");
-	MainWindow::data.setTimeStamp<std::string>(oldRowCount-1, "");
-	MainWindow::data.setComment<std::string>(oldRowCount-1, "");
+	MainWindow::data->setTime<std::string>(oldRowCount-1, "");
+	MainWindow::data->setMO3<std::string>(oldRowCount-1, "");
+	MainWindow::data->setAO5<std::string>(oldRowCount-1, "");
+	MainWindow::data->setScramble<std::string>(oldRowCount-1, "");
+	MainWindow::data->setTimeStamp<std::string>(oldRowCount-1, "");
+	MainWindow::data->setComment<std::string>(oldRowCount-1, "");
 	for (int i(row-1); i > 0; --i) {
 		dynamic_cast<TimeItem*>(this->item(i, 0))->setRowCSV(oldRowCount-i);
 	}
 	this->removeRow(row);
-	MainWindow::data.recomputeStatistics();
-	//pbs.fill({Duration<long long>(LLONG_MAX), 0});
-	//long long readValue(LLONG_MAX);
-	//for (size_t i(0); i < MainWindow::data.sessionRowCount(); ++i) {
-	//	readValue = MainWindow::data.getTime<long long>(i);
-	//	if (readValue < pbs[0].first) {
-	//		pbs[0].first = readValue;
-	//		pbs[0].second = i;
-	//	}
-	//	readValue = MainWindow::data.getMO3<long long>(i);
-	//	if (readValue < pbs[1].first) {
-	//		pbs[1].first = readValue;
-	//		pbs[1].second = i;
-	//	}
-	//	readValue = MainWindow::data.getAO5<long long>(i);
-	//	if (readValue < pbs[2].first) {
-	//		pbs[2].first = readValue;
-	//		pbs[2].second = i;
-	//	}
-	//	readValue = MainWindow::data.getAO12<long long>(i);
-	//	if (readValue < pbs[3].first) {
-	//		pbs[3].first = readValue;
-	//		pbs[3].second = i;
-	//	}
-	//}
-	//emit sendPBs(pbs);
+	MainWindow::data->recomputeStatistics();
 	try {
 		this->readCSV();
 	} catch (...) {
 	//	The only error that may be thrown is TimesList::missingData, which does not matter at this point of the execution.
+	}
+	if (MainWindow::settings->getSetting("autoSave", QVariant(false), this).toBool()) {
+		MainWindow::data->Save();
 	}
 }
 
 void TimesList::tryScrambleAgain(int row) {
 	Scramble s;
 	try {
-		s = Scramble(MainWindow::data.getScramble<std::string>(MainWindow::data.GetRowCount()-1-row));
+		s = Scramble(MainWindow::data->getScramble<std::string>(MainWindow::data->sessionRowCount()-1-row));
 	} catch (Scramble::Error const&) {
 		s.regenerate();
 		QMessageBox::warning(this, "", "This time did not have a scramble saved. Another one was generated.");
@@ -510,7 +450,7 @@ void TimesList::tryScrambleAgain(int row) {
 	emit sendScramble(s);
 }
 void TimesList::copyScramble(int row) {
-	QGuiApplication::clipboard()->setText(QString::fromStdString(MainWindow::data.getScramble<std::string>(MainWindow::data.GetRowCount()-1-row)));
+	QGuiApplication::clipboard()->setText(QString::fromStdString(MainWindow::data->getScramble<std::string>(MainWindow::data->sessionRowCount()-1-row)));
 }
 
 void TimesList::treatDoubleClick(QTableWidgetItem* item) {

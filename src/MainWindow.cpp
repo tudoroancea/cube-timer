@@ -20,21 +20,12 @@
 #include <QAction>
 #include <QFileDialog>
 #include <iostream>
+#include <utility>
 
 namespace csv = rapidcsv;
 namespace fs = std::filesystem;
 
-Headers::Headers(std::string time, std::string mo3, std::string ao5, std::string ao12, std::string scramble, std::string timeStamp, std::string comment) : time(time), mo3(mo3), ao5(ao5), ao12(ao12), scramble(scramble), timeStamp(timeStamp), comment(comment) {}
-bool Headers::matches(std::vector<std::string> const& vec) const {
-	return (vec.size() == HeadersNumber &&
-			std::find(vec.begin(),vec.end(),time) != vec.end() &&
-			std::find(vec.begin(),vec.end(),mo3) != vec.end() &&
-			std::find(vec.begin(),vec.end(),ao5) != vec.end() &&
-			std::find(vec.begin(),vec.end(),ao12) != vec.end() &&
-			std::find(vec.begin(),vec.end(),scramble) != vec.end() &&
-			std::find(vec.begin(),vec.end(),timeStamp) != vec.end() &&
-			std::find(vec.begin(),vec.end(),comment) != vec.end());
-}
+Headers::Headers(std::string time, std::string const& mo3, std::string const& ao5, std::string const& ao12, std::string const& scramble, std::string const& timeStamp, std::string const& comment) : time(std::move(time)), mo3(mo3), ao5(ao5), ao12(ao12), scramble(scramble), timeStamp(timeStamp), comment(comment) {}
 std::string Headers::operator[](size_t const& index) const {
 	switch (index) {
 		case 0: return time;
@@ -47,36 +38,22 @@ std::string Headers::operator[](size_t const& index) const {
 		default:  return "";
 	}
 }
+
 size_t MainWindow::currentSession = 0;
 const Headers MainWindow::metadataHeaders("time", "mo3", "ao5", "ao12", "scramble", "timeStamp", "comment");
-Data MainWindow::data = Data();
+//data and settings won't contain any pointer here. They will only if we use make_unique explicitely (in the main)
+std::unique_ptr<Data> MainWindow::data = std::unique_ptr<Data>();
+std::unique_ptr<Settings> MainWindow::settings = std::unique_ptr<Settings>();
 
-MainWindow::MainWindow(char* const& argv0)
-	: exePath(argv0),
-	  settings(nullptr),
-	  timer(new QTimer),
+MainWindow::MainWindow()
+	: timer(new QTimer),
 	  launchingTimer(new QTimer),
-	  dataPath(argv0),
 	  timeLabel(new QLabel("0.000", this)),
 	  scramble(),
 	  scrambleLabel(new QLabel(scramble.toQString(), this)),
 	  mainLayout(new QHBoxLayout),
 	  fileMenu(nullptr)
 {
-	try {
-		settings = new Settings(argv0);
-	} catch (Settings::Error const& err) {
-		if (err.type() == Settings::wrongFormat || err.type() == Settings::wrongPath) {
-			QMessageBox::critical(this, "", "The settings could not be loaded correctly.");
-			QCoreApplication::exit(1);
-			std::exit(1);
-		}
-	}
-	dataPath /= "../../Resources/default-historic.csv";
-	dataPath = fs::canonical(dataPath);
-	// If there is a problem with the csv file, the app exits with 1, so the TimesList won't even be created.
-	data.Load(dataPath.string());
-
 	timesList = new TimesList();
 	connect(timesList, SIGNAL(sendScramble(Scramble const&)), this, SLOT(tryScrambleAgain(Scramble const&)));
 	pbWidget = new PBWidget();
@@ -126,7 +103,7 @@ MainWindow::~MainWindow() {
 		this->save();
 	} else {
 		if (!savedJustBefore) {
-			QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save data to current CSV ? ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes));
+			QMessageBox::StandardButton reply(QMessageBox::question(this, "", "Do you want to save the current data ? ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes));
 			if (reply == QMessageBox::Yes) {
 				this->save();
 			}
@@ -136,7 +113,7 @@ MainWindow::~MainWindow() {
 	delete scrambleLabel;
 	delete timer;
 	delete launchingTimer;
-	delete settings;
+	//delete settings;
 	delete fileMenu;
 	delete mainLayout;
 	for (auto const & action : actions) {
@@ -283,21 +260,21 @@ void MainWindow::createAboutMessage() {
 }
 
 void MainWindow::save() {
-	MainWindow::data.Save();
+	MainWindow::data->Save();
 	savedJustBefore = true;
 }
 
 void MainWindow::saveAs() {
 	QString str(QFileDialog::getSaveFileName(this, "Save current data", "/Users/untitled.csv", "CSV files (*.csv)"));
 	if (!str.isEmpty()) {
-		MainWindow::data.Save(str.toStdString());
+		MainWindow::data->Save(str.toStdString());
 		savedJustBefore = true;
 	}
 }
 
 
 void MainWindow::openPreferences() {
-	SettingsDialog dialog(settings, this);
+	SettingsDialog dialog(settings.get(), this);
 	dialog.exec();
 }
 

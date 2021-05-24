@@ -49,10 +49,6 @@ private:
 	 */
 	void readCSV();
 	/**
-	 * @brief PBs
-	 */
-	 //std::array<Duration<long long>,4> pbs;
-	/**
 	 * @brief PBs for the best time, mo3, ao5 and ao12.
 	 */
 	 std::array<std::pair<Duration<long long>,size_t>,4> pbs;

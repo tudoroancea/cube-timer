@@ -4,7 +4,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tudoroancea/cube-timer?label=latest%20release)
 ![GitHub](https://img.shields.io/github/license/tudoroancea/cube-timer)
 ![GitHub top language](https://img.shields.io/github/languages/top/tudoroancea/cube-timer)
-
+![principal](images/principal.png)
 This is a simple GUI project using Qt to create a cube timer suited to my personal needs.
 Concretly this means:
 - It is purely intended for macOS users (on other OS's the CMakeLists won't even create the main target 
@@ -18,7 +18,15 @@ For example, I won't implement inspection times for 3x3 blind or scrambles for c
 - Generating new scrambles before launching the timer (if you don't like the current one)
 - ao5 and ao12 computed live and saved along with the actual times once the app is closed.
 - Saving the data in a custom location instead of the ```default-historic.csv``` file in the Application.
-- Settings Panel.
+- Settings Panel for auto Save and launching interval
+- PBs displayed.
+- More informations available with a double click and/or a right click
 
 ## Copyright
 This project is licenced under the MIT licence (see ```LICENCE``` file).
+
+## Screenshots
+![mo3](images/mo3.png)
+![right-click](images/right-click.png)
+![comments](images/comments.png)
+![settings](images/settings.png)

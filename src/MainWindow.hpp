@@ -16,6 +16,7 @@
 #include <QMainWindow>
 #include <filesystem>
 #include <unordered_map>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 	class QLabel;
@@ -33,8 +34,7 @@ struct Headers {
 	std::string scramble;
 	std::string timeStamp;
 	std::string comment;
-	Headers(std::string time, std::string mo3, std::string ao5, std::string ao12, std::string scramble, std::string timeStamp, std::string comment);
-	bool matches(std::vector<std::string> const& vec) const;
+	Headers(std::string  time, std::string const& mo3, std::string const& ao5, std::string const& ao12, std::string const& scramble, std::string const& timeStamp, std::string const& comment);
 	std::string operator[](size_t const& index) const;
 };
 
@@ -43,17 +43,9 @@ Q_OBJECT
 private:
 	//	Global info / settings ============
 	/**
-	 * @brief contains argv[0]
-	 */
-	[[maybe_unused]] char* exePath;
-	/**
 	 * @brief Brief description of the app to display in the About action
 	 */
 	QString aboutMessage;
-	/**
-	 * @brief Pretty self-explanatory
-	 */
-	Settings* settings;
 
 	// Timers
 	/**
@@ -133,13 +125,18 @@ private slots:
 	void about();
 
 public:
-	// CSV Data
-	static Data data;
+	/**
+	 * @brief Pretty self-explanatory
+	 */
+	static std::unique_ptr<Settings> settings;
+	/**
+	 * @brief CSV data
+	 */
+	static std::unique_ptr<Data> data;
 	static size_t currentSession;
-	std::filesystem::path dataPath;
 	static const Headers metadataHeaders;
 
-	explicit MainWindow(char* const& argv0);
+	explicit MainWindow();
 	~MainWindow() override;
 	void keyPressEvent(QKeyEvent* event) override;
 	void keyReleaseEvent(QKeyEvent* event) override;
