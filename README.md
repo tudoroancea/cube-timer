@@ -26,7 +26,11 @@ For example, I won't implement inspection times for 3x3 blind or scrambles for c
 This project is licenced under the MIT licence (see ```LICENCE``` file).
 
 ## Screenshots
-![mo3](images/mo3.png)
-![right-click](images/right-click.png)
-![comments](images/comments.png)
-![settings](images/settings.png)
+### Timing your solves :
+![timer](images/time-with-comment.gif)
+### Changing the settings :
+![settings](images/settings.gif)
+### Displaying additional information :
+![info](images/view-info.gif)
+### Deleting times :
+![delete-times](images/delete-time.gif)
