@@ -4,12 +4,12 @@
 // Licensed under the MIT licence (see details at https://github.com/tudoroancea/cube-timer/blob/develop/LICENSE)
 //
 
-#include "MainWindow.hpp"
 #include "Data.hpp"
+#include "MainWindow.hpp"
 
 #include <QApplication>
-#include <memory>
 #include <filesystem>
+#include <memory>
 
 
 int main(int argc, char* argv[]) {

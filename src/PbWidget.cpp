@@ -12,15 +12,15 @@ TimeLabel::TimeLabel(const long long& val, QWidget* parent, const size_t& row, T
 TimeLabel::TimeLabel(TimeItem* item, QWidget* parent) : Time(item->getRowCSV(), item->getType()), QLabel(item->text(), parent) {}
 
 void TimeLabel::mouseDoubleClickEvent(QMouseEvent* event) {
-	this->showDoubleCLick();
+    this->showDoubleCLick();
 }
 
 PBWidget::PBWidget(QWidget* parent) : QGroupBox(parent) {
-	this->setTitle("PBs (Personnal Bests)");
-	this->setAlignment(Qt::AlignHCenter);
+    this->setTitle("PBs (Personnal Bests)");
+    this->setAlignment(Qt::AlignHCenter);
 
-	auto timeLine(new QHBoxLayout);
-	timeLine->addWidget(new QLabel("Time"), 0, Qt::AlignHCenter);
+    auto timeLine(new QHBoxLayout);
+    timeLine->addWidget(new QLabel("Time"), 0, Qt::AlignHCenter);
 	pbs[0] = new TimeLabel("", nullptr, 0, Time::time);
 	timeLine->addWidget(pbs[0], 0, Qt::AlignHCenter);
 	auto mo3Line(new QHBoxLayout);
@@ -52,6 +52,3 @@ void PBWidget::changePBS(std::array<std::pair<Duration<long long int>, size_t>, 
 		}
 	}
 }
-
-
-

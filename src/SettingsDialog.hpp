@@ -9,8 +9,8 @@
 
 #include "Settings.hpp"
 
-#include <QWidget>
 #include <QDialog>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QWidget;
@@ -20,8 +20,9 @@ class SettingsDialog : public QDialog {
 	Q_OBJECT
 private:
 	Settings* settings;
+
 public:
 	explicit SettingsDialog(Settings* settings, QWidget* parent = nullptr);
 };
 
-#endif // CUBE_TIMER_SETTINGSDIALOG_HPP
+#endif  // CUBE_TIMER_SETTINGSDIALOG_HPP

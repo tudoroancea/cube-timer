@@ -26,16 +26,16 @@ public:
 };
 
 class PBWidget : public QGroupBox {
-Q_OBJECT
+    Q_OBJECT
 private:
-	std::array<TimeLabel*, 4> pbs;
+    std::array<TimeLabel*, 4> pbs;
 
 public:
-	PBWidget(QWidget* parent = nullptr);
+    PBWidget(QWidget* parent = nullptr);
 
 public slots:
-	void changePBS(std::array<std::pair<Duration<long long>,size_t>,4> const& vals);
+    void changePBS(std::array<std::pair<Duration<long long>, size_t>, 4> const& vals);
 };
 
 
-#endif //CUBE_TIMER_PBWIDGET_HPP
+#endif  //CUBE_TIMER_PBWIDGET_HPP

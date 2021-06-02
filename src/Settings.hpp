@@ -11,43 +11,51 @@
 
 #include <QObject>
 #include <QVariant>
-#include <filesystem>
 #include <exception>
+#include <filesystem>
 
 QT_BEGIN_NAMESPACE
-	class QString;
-	class QVariant;
-	class QWidget;
+class QString;
+class QVariant;
+class QWidget;
 QT_END_NAMESPACE
 
 namespace fs = std::filesystem;
 namespace csv = rapidcsv;
 
 class Settings : public QObject {
-Q_OBJECT
+    Q_OBJECT
 private:
-	fs::path settingsPath;
-	fs::path defaultSettingsPath;
-	csv::Document data;
+    fs::path settingsPath;
+    fs::path defaultSettingsPath;
+    csv::Document data;
 
-	bool settingExists(QString const& key);
-	static void settingDoesntExistWarning(QString const& key, QWidget* warningParent = nullptr);
+    bool settingExists(QString const& key);
+    static void settingDoesntExistWarning(QString const& key, QWidget* warningParent = nullptr);
 
 public:
-	enum ErrorType{wrongPath, wrongFormat, settingDoesntExist, badConversion};
-	struct Error : public std::exception {
-		ErrorType type_;
-		explicit Error(ErrorType const& t) : type_(t) {}
-		[[nodiscard]] ErrorType const& type() const {return type_;}
-		[[nodiscard]] const char* what() const noexcept override {
-			switch (type_) {
-				case wrongPath: return "Wrong Path";
-				case wrongFormat: return "Wrong Format";
-				case settingDoesntExist: return "Settings does not exist";
-				case badConversion: return "Bad Conversion";
-				default: return "Settings::Error";
-			}
-		}
+    enum ErrorType { wrongPath,
+                     wrongFormat,
+                     settingDoesntExist,
+                     badConversion };
+    struct Error : public std::exception {
+        ErrorType type_;
+        explicit Error(ErrorType const& t) : type_(t) {}
+        [[nodiscard]] ErrorType const& type() const { return type_; }
+        [[nodiscard]] const char* what() const noexcept override {
+            switch (type_) {
+                case wrongPath:
+                    return "Wrong Path";
+                case wrongFormat:
+                    return "Wrong Format";
+                case settingDoesntExist:
+                    return "Settings does not exist";
+                case badConversion:
+                    return "Bad Conversion";
+                default:
+                    return "Settings::Error";
+            }
+        }
 	};
 
 	explicit Settings(char* const& argv0);
@@ -73,7 +81,6 @@ public slots:
 	 * @param warningParent parent of the warning dialog.
 	 */
 	void setSetting(QString const& key, QVariant const& value, QWidget* warningParent = nullptr) noexcept;
-
 };
 
-#endif //CUBE_TIMER_SETTINGS_HPP
+#endif  //CUBE_TIMER_SETTINGS_HPP

@@ -17,25 +17,25 @@ namespace fs = std::filesystem;
 namespace csv = rapidcsv;
 
 Settings::Settings(char* const& argv0) {
-	settingsPath = fs::path(argv0);
-	settingsPath /= "../../Resources/settings.csv";
-	settingsPath = fs::canonical(settingsPath);
-	defaultSettingsPath = fs::path(argv0);
-	defaultSettingsPath /= "../../Resources/default-settings.csv";
-	defaultSettingsPath = fs::canonical(defaultSettingsPath);
+    settingsPath = fs::path(argv0);
+    settingsPath /= "../../Resources/settings.csv";
+    settingsPath = fs::canonical(settingsPath);
+    defaultSettingsPath = fs::path(argv0);
+    defaultSettingsPath /= "../../Resources/default-settings.csv";
+    defaultSettingsPath = fs::canonical(defaultSettingsPath);
 
-	try {
-		data.Load(settingsPath.string(),
-			csv::LabelParams(0,0),
-			csv::SeparatorParams(),
-			csv::ConverterParams(true, 0.0, 0));
-	} catch (...) {
-		#ifdef DEBUG_MODE
-		std::cerr << "Settings file not found." << std::endl;
-		#endif
-		QMessageBox::critical(nullptr, "", "The settings could not be loaded correctly.");
-		QCoreApplication::exit(1);
-		std::exit(1);
+    try {
+        data.Load(settingsPath.string(),
+                  csv::LabelParams(0, 0),
+                  csv::SeparatorParams(),
+                  csv::ConverterParams(true, 0.0, 0));
+    } catch (...) {
+#ifdef DEBUG_MODE
+        std::cerr << "Settings file not found." << std::endl;
+#endif
+        QMessageBox::critical(nullptr, "", "The settings could not be loaded correctly.");
+        QCoreApplication::exit(1);
+        std::exit(1);
 	}
 	size_t nbrCols(data.GetColumnCount());
 	if (nbrCols != 1) {

@@ -54,118 +54,117 @@ public:
 	void recomputeStatistics(size_t const& session = MainWindow::currentSession);
 };
 
-template<typename T>
+template <typename T>
 T Data::getTime(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.time, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.time, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getMO3(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.mo3, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.mo3, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getAO5(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.ao5, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.ao5, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getAO12(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.ao12, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.ao12, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getScramble(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.scramble, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.scramble, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getTimeStamp(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.timeStamp, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.timeStamp, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 T Data::getComment(size_t row, size_t session) {
-	if (row < this->GetRowCount()) {
-		return this->GetCell<T>(std::to_string(session)+MainWindow::metadataHeaders.comment, row);
-	} else if (typeid(T) == typeid(std::string)) {
-		return T();
-	} else {
-		return 0;
-	}
+    if (row < this->GetRowCount()) {
+        return this->GetCell<T>(std::to_string(session) + MainWindow::metadataHeaders.comment, row);
+    } else if (typeid(T) == typeid(std::string)) {
+        return T();
+    } else {
+        return 0;
+    }
 }
 
-template<typename T>
+template <typename T>
 void Data::setTime(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.time), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.time), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setMO3(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.mo3), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.mo3), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setAO5(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.ao5), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.ao5), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setAO12(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.ao12), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.ao12), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setScramble(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.scramble), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.scramble), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setTimeStamp(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.timeStamp), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.timeStamp), row, val);
 }
 
-template<typename T>
+template <typename T>
 void Data::setComment(size_t row, T const& val, size_t session) {
-	this->SetCell<T>(this->GetColumnIdx(std::to_string(session)+MainWindow::metadataHeaders.comment), row, val);
+    this->SetCell<T>(this->GetColumnIdx(std::to_string(session) + MainWindow::metadataHeaders.comment), row, val);
 }
 
 
-
-#endif //CUBE_TIMER_DATA_HPP
+#endif  //CUBE_TIMER_DATA_HPP

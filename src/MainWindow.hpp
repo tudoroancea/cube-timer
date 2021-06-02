@@ -7,48 +7,48 @@
 #ifndef CUBE_TIMER_MAINWINDOW_HPP
 #define CUBE_TIMER_MAINWINDOW_HPP
 
+#include "PbWidget.hpp"
+#include "Scramble.hpp"
+#include "Settings.hpp"
 #include "TimesList.hpp"
 #include "libs/rapidcsv.h"
-#include "Settings.hpp"
-#include "Scramble.hpp"
-#include "PbWidget.hpp"
 
 #include <QMainWindow>
 #include <filesystem>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 QT_BEGIN_NAMESPACE
-	class QLabel;
-	class QTimer;
-	class QHBoxLayout;
+class QLabel;
+class QTimer;
+class QHBoxLayout;
 QT_END_NAMESPACE
 class Data;
 
 #define HeadersNumber 7
 struct Headers {
-	std::string time;
-	std::string mo3;
-	std::string ao5;
-	std::string ao12;
-	std::string scramble;
-	std::string timeStamp;
-	std::string comment;
-	Headers(std::string  time, std::string const& mo3, std::string const& ao5, std::string const& ao12, std::string const& scramble, std::string const& timeStamp, std::string const& comment);
-	std::string operator[](size_t const& index) const;
+    std::string time;
+    std::string mo3;
+    std::string ao5;
+    std::string ao12;
+    std::string scramble;
+    std::string timeStamp;
+    std::string comment;
+    Headers(std::string time, std::string const& mo3, std::string const& ao5, std::string const& ao12, std::string const& scramble, std::string const& timeStamp, std::string const& comment);
+    std::string operator[](size_t const& index) const;
 };
 
 class MainWindow : public QMainWindow {
-Q_OBJECT
+    Q_OBJECT
 private:
-	//	Global info / settings ============
-	/**
+    //	Global info / settings ============
+    /**
 	 * @brief Brief description of the app to display in the About action
 	 */
-	QString aboutMessage;
+    QString aboutMessage;
 
-	// Timers
-	/**
+    // Timers
+    /**
 	 * @brief Main timer used to time the cube and update the displayed time live
 	 */
 	QTimer* timer;
@@ -100,28 +100,28 @@ private slots:
 	/**
 	 * @brief Change the color of timeLabel to green.
 	 */
-	void makeTimeGreen() const;
-	/**
+    void makeTimeGreen() const;
+    /**
 	 * @brief Resets the color of timeLabel.
 	 */
-	void resetTimeColor() const;
-	/**
+    void resetTimeColor() const;
+    /**
 	 * @brief Update timeLabel to match the time that has passed since startPoint.
 	 */
-	void changeDisplayedTime();
+    void changeDisplayedTime();
 
-//	Actions ==========
-	/**
+    //	Actions ==========
+    /**
 	 * @brief Saves data to current CSV (default or custom location)..
 	 */
-	void save();
-	/**
+    void save();
+    /**
 	 * @brief Saves data to any CSV (default or custom location).
 	 */
-	void saveAs();
+    void saveAs();
 
-	//void loadCustomCSV();
-	void openPreferences();
+    //void loadCustomCSV();
+    void openPreferences();
 	void about();
 
 public:
@@ -145,4 +145,4 @@ public slots:
 	void tryScrambleAgain(Scramble const& toTry);
 };
 
-#endif //CUBE_TIMER_MAINWINDOW_HPP
+#endif  //CUBE_TIMER_MAINWINDOW_HPP
